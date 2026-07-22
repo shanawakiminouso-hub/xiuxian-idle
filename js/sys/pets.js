@@ -46,7 +46,7 @@
  *  bloodInfo(id)     → data 血脉行 | null
  *  tierOf(apt)       → {id,name,min,max,mult} 资质档
  *  jobDefs()         → { lt:{id,name,icon,desc}, sl:{...}, explore:{...} } 打工定义
- *  jobCap()          → 打工位上限（8）
+ *  jobCap()          → 打工位上限（3 + 洞府兽栏等级/2 + 段位等级）
  *  jobList()         → [{ uid, pet:PetView, job, jobName, icon }]
  *  ratesFor(uid)     → { herbPerH, expPerH, lingShiPerH } 该宠三种打工的小时产出（已含全部倍率）
  *  pending()         → { lingShi, mat:{matId:n} } 待领池原值（lingShi 为浮点，显示请 fmtInt）
@@ -332,6 +332,17 @@
 
   /* ============================== 打工 ============================== */
   function caveLv(id) { const c = XG.state.cave; return (c && c.lv && c.lv[id]) || 0; }
+  // 段位等级：论剑段位 idx（青铜=0 递增至仙尊=5），防御性降级
+  function pvpTierIdx() {
+    try {
+      const pvp = XG.sys.pvp;
+      if (pvp && typeof pvp.getOverview === 'function') {
+        const ov = pvp.getOverview();
+        if (ov && ov.tier && typeof ov.tier.idx === 'number') return ov.tier.idx;
+      }
+    } catch (e) { /* ignore */ }
+    return 0;
+  }
   // 打工总倍率：1 +(性格 workPct + 打工技能 workPct + 全局 workPct，如力士丹)/100
   function workMult(pet) {
     let pct = personaOf(pet.persona).workPct || 0;
@@ -629,7 +640,7 @@
     bloodInfo(id) { return bloodMap()[id] || null; },
     tierOf: tierOf,
     jobDefs() { return JOBS; },
-    jobCap() { return 8; }, // 打工位上限（原 3 + 洞府兽栏等级/2）
+    jobCap() { return 3 + Math.floor(caveLv('sl') / 2) + pvpTierIdx(); }, // 打工位上限（基数3 + 洞府兽栏等级/2 + 段位等级）
     jobList() {
       const st = P(), self = this, out = [];
       for (const uid in st.jobs) {
