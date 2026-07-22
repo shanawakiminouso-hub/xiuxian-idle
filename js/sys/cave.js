@@ -125,7 +125,7 @@
 
   // 灵田产出池（按品阶分档，roll 权重 90/8/2）
   const POOL_G1 = ['herb_qingling', 'herb_ningxue', 'herb_ningshen', 'herb_ziye', 'herb_lingzhi', 'herb_fuling', 'herb_huangjing'];
-  const POOL_G2 = ['herb_renshen', 'herb_heshouwu', 'herb_xuelian', 'herb_juling', 'herb_chiyang', 'herb_bingxin'];
+  const POOL_G2 = ['herb_renshen', 'herb_heshouwu', 'herb_xuelian', 'herb_juling', 'herb_yuehua', 'herb_chiyang', 'herb_bingxin'];
   const POOL_G3 = ['herb_chiyancao', 'herb_longxiancao', 'herb_xuanbing', 'herb_huolingzhi', 'herb_digen', 'herb_jinxian'];
 
   // 自动排布优选格位（金→水→木→火→土连环相生，可得 5 对）

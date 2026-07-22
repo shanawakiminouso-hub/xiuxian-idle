@@ -7,8 +7,10 @@
 
   /* ==================== 材料登记（并入 XG.data.mats） ====================
    * 本文件负责登记：ore_*（矿石 12 种）、gem_*（宝石 10 种）、beast_*（妖兽材料 13 种）、sp_*（地图特产 9 种）。
-   * herb_* 由炼丹批次（pills.js）主登记；此处仅对本图掉落引用到的 9 种 herb 做「保底登记」：
+   * herb_* 由炼丹批次（pills.js）主登记；此处仅对本图掉落引用到的 9 种低阶 herb 做「保底登记」：
    *   一律「存在则不覆盖」，绝不改写他人条目，保证与炼丹批次不冲突。
+   *   中高阶地图（万妖岭起）掉落表另直接引用 pills.js 主登记的丹方灵草（四~九阶），
+   *   按图阶配品：万妖岭g4 / 北海g4~5 / 焚天g5~6 / 幽冥g6 / 归墟g5~9 / 龙渊g8~9，无需重复登记。
    * grade 口径（材料表自定义）：0 凡 / 1 灵 / 2 宝 / 3 仙 / 4 神。
    */
   const MATS = {
@@ -157,6 +159,7 @@
           ore_miyin: [1, 2, 8], ore_jingjin: [1, 2, 7],
           beast_yaodan: [1, 2, 7], beast_jiaowei: [1, 2, 6],
           gem_zijing: [1, 1, 5], gem_xuepo: [1, 1, 4],
+          herb_youming: [1, 2, 7], herb_fengwei: [1, 1, 5], herb_zhuguo: [1, 1, 3],
         },
         pill: { g3: [1, 1, 5] }, frag: { g3: [1, 1, 4] },
         eggChance: 0.07, recipeChance: 0.04,
@@ -174,6 +177,7 @@
           ore_hantie: [1, 2, 8], ore_jingjin: [1, 2, 6],
           beast_bingjiao_lin: [1, 2, 7], beast_jiaowei: [1, 2, 5],
           gem_hanyu: [1, 1, 5], gem_xinghui: [1, 1, 3],
+          herb_longxu: [1, 2, 7], herb_hansui: [1, 1, 5], herb_yusui: [1, 1, 4],
         },
         pill: { g4: [1, 1, 4] }, frag: { g4: [1, 1, 3] },
         eggChance: 0.04, recipeChance: 0.05,
@@ -191,6 +195,7 @@
           ore_chijing: [1, 3, 9], ore_jingjin: [2, 3, 7],
           beast_yanlang_gu: [1, 2, 8],
           gem_yanxin: [1, 1, 6], gem_xinghui: [1, 1, 3],
+          herb_dihuo: [1, 2, 7], herb_leiming: [1, 1, 5], herb_taiyang: [1, 1, 4],
         },
         pill: { g5: [1, 1, 4] }, frag: { g5: [1, 1, 3] },
         eggChance: 0.05, recipeChance: 0.06,
@@ -208,6 +213,7 @@
           ore_mingtie: [1, 3, 9], ore_chijing: [1, 2, 5],
           beast_mingdie_yi: [1, 2, 8], beast_yaodan: [1, 3, 6],
           gem_mingzhu: [1, 1, 6],
+          herb_xueling: [1, 2, 7], herb_taiyin: [1, 1, 5],
         },
         pill: { g6: [1, 1, 4] }, frag: { g6: [1, 1, 3] },
         eggChance: 0.04, recipeChance: 0.06,
@@ -228,6 +234,7 @@
           ore_xingchenjin: [1, 2, 9], ore_mingtie: [1, 2, 5],
           beast_kun_yu: [1, 2, 8],
           gem_guixuyu: [1, 1, 6], gem_xinghui: [1, 2, 5],
+          herb_xukong: [1, 2, 6], herb_tianxing: [1, 1, 5], herb_wudao: [1, 1, 4], herb_hundun: [1, 1, 2],
         },
         pill: { g7: [1, 1, 4] }, frag: { g7: [1, 1, 3], g8: [1, 1, 1] },
         eggChance: 0.08, recipeChance: 0.08,
@@ -247,6 +254,8 @@
           ore_longwenjin: [1, 2, 9], ore_xingchenjin: [1, 2, 6], ore_hundunjin: [1, 1, 3],
           beast_longlin: [1, 2, 8], beast_longgu: [1, 2, 7], beast_longjiao: [1, 1, 5],
           gem_longmu: [1, 1, 5], gem_guixuyu: [1, 1, 3],
+          herb_longxian: [1, 2, 6], herb_fengxue: [1, 1, 5], herb_xuanwu: [1, 1, 4],
+          herb_puti: [1, 1, 3], herb_busi: [1, 1, 2],
         },
         pill: { g8: [1, 1, 4] }, frag: { g8: [1, 1, 3], g9: [1, 1, 1] },
         eggChance: 0.1, recipeChance: 0.08,
