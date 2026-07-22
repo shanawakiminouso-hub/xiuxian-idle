@@ -356,7 +356,8 @@
     const need = layerNeed(n);
     const power = playerPower();
     const p = XG.state.player;
-    const penalty = Math.floor(0.1 * XG.cfg.layerCost(p.realmIdx, p.layer));
+    const isFeisheng = p.realmIdx >= 9;
+    const penalty = isFeisheng ? 0 : Math.floor(0.1 * XG.cfg.layerCost(p.realmIdx, p.layer));
     return {
       unlocked: XG.cfg.isUnlocked('dungeon_tower'),
       layer: n,
@@ -365,15 +366,16 @@
       power: power,
       winP: winRate(power, need),
       penalty: penalty,
-      penaltyOk: (p.cult || 0) >= penalty,
+      penaltyOk: isFeisheng || (p.cult || 0) >= penalty,
       hiddenBoss: isBossLayer(n),
       boss: bossOf(n),
       affixes: affixList().map(function (a) { return { id: a.id, name: a.name, desc: a.desc, eff: a.eff }; }),
       week: d.week,
+      feisheng: isFeisheng,
     };
   }
 
-  // 挑战当前层：胜利 layer+1 发掉落；失败扣当前等级修为 10%（不足则不可挑战）
+  // 挑战当前层：胜利 layer+1 发掉落；失败扣当前等级修为 10%（不足则不可挑战；飞升境无限挑战）
   function challengeTower() {
     if (!XG.cfg.isUnlocked('dungeon_tower')) return { ok: false, err: '镇妖塔尚未开启（金丹一层）' };
     const d = D();
@@ -382,15 +384,16 @@
     const need = layerNeed(n);
     const power = playerPower();
     const wp = winRate(power, need);
-    // 失败惩罚校验：扣当前等级所需修为的 10%
+    // 失败惩罚校验：飞升境无损耗；否则扣当前等级所需修为的 10%
     const p = XG.state.player;
-    const penalty = Math.floor(0.1 * XG.cfg.layerCost(p.realmIdx, p.layer));
-    if ((p.cult || 0) < penalty) {
+    const isFeisheng = p.realmIdx >= 9;
+    const penalty = isFeisheng ? 0 : Math.floor(0.1 * XG.cfg.layerCost(p.realmIdx, p.layer));
+    if (!isFeisheng && (p.cult || 0) < penalty) {
       return { ok: false, err: '修为不足' + XG.util.fmt(penalty) + '，无法挑战镇妖塔' };
     }
-    const baseRet = { ok: true, win: false, winP: wp, power: power, need: need, layer: n, hiddenBoss: boss, boss: bossOf(n), rewards: null, penalty: penalty };
+    const baseRet = { ok: true, win: false, winP: wp, power: power, need: need, layer: n, hiddenBoss: boss, boss: bossOf(n), rewards: null, penalty: penalty, feisheng: isFeisheng };
     if (!U().chance(wp)) {
-      // 失败：扣修为
+      // 失败：扣修为（飞升境不扣）
       if (penalty > 0) {
         const cu = XG.sys.cultivation;
         if (cu && typeof cu.addCult === 'function') {
