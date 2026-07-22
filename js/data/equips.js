@@ -274,10 +274,10 @@
     starMul(star) { return 1 + 0.15 * (star || 0); },
 
     /* 强化 lv→lv+1 消耗：灵石 + 对应品阶矿石（数量随等级递增）。
-       lv 为当前强化等级（0 起），grade 缺省 0。 */
+       lv 为当前强化等级（0 起），grade 缺省 0。灵石曲线 1.45^lv（原 1.65^lv 过陡，强满≈单宠 18 天灵石） */
     enhanceCost(lv, grade) {
       grade = grade || 0;
-      const cost = { lingShi: Math.floor(120 * Math.pow(1.65, lv) * Math.pow(6, grade)), mat: {} };
+      const cost = { lingShi: Math.floor(120 * Math.pow(1.45, lv) * Math.pow(6, grade)), mat: {} };
       cost.mat[ORE_BY_GRADE[grade] || 'ore_jingtie'] = 2 + lv;
       return cost;
     },

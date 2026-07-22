@@ -383,6 +383,7 @@
   function marketBase(s) {
     const mr = (XG.data && XG.data.world && XG.data.world.marketRules) || {};
     const bp = (mr.stock && mr.stock.basePrice) || {};
+    if (s.kind === 'recipe') return (s.grade || 1) * 3; // 丹方栏为灵玉固定价，无划线对比
     let b = 0;
     if (s.kind === 'pill') b = (bp.pillPerGrade || 200) * (s.grade || 1);
     else if (s.kind === 'mat') b = bp['matG' + (s.grade || 0)] || 100;

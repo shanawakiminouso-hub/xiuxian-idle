@@ -73,14 +73,14 @@
   const SWEEP_PAY = 5;         // 扫荡加次票价（灵玉/次）
   const SWEEP_RATE = 0.8;      // 扫荡收益折算系数
 
-  // 塔层材料池按品阶分档（品阶随层数解锁；id 均取自 DATA_NOTES 权威表）
+  // 塔层材料池按品阶分档（品阶随层数解锁；id 均取自 DATA_NOTES 权威表；含锻造矿 ore_jingtie/zijin/xingsha/xingchen/longjin）
   const MAT_TIERS = [
-    ['ore_qingtong', 'ore_heite', 'gem_lingcui', 'beast_huya', 'beast_tuling'],
+    ['ore_qingtong', 'ore_heite', 'ore_jingtie', 'gem_lingcui', 'beast_huya', 'beast_tuling'],
     ['ore_xuantie', 'ore_wuxingsha', 'gem_biyu', 'gem_zijing', 'beast_shelin', 'beast_xiongdan'],
-    ['ore_miyin', 'ore_jingjin', 'gem_xuepo', 'gem_hanyu', 'beast_yaodan', 'beast_jiaowei'],
-    ['ore_hantie', 'ore_chijing', 'ore_mingtie', 'gem_xinghui', 'gem_yanxin', 'gem_mingzhu',
+    ['ore_miyin', 'ore_jingjin', 'ore_zijin', 'ore_xingsha', 'gem_xuepo', 'gem_hanyu', 'beast_yaodan', 'beast_jiaowei'],
+    ['ore_hantie', 'ore_chijing', 'ore_mingtie', 'ore_xingchen', 'gem_xinghui', 'gem_yanxin', 'gem_mingzhu',
       'beast_bingjiao_lin', 'beast_yanlang_gu', 'beast_mingdie_yi'],
-    ['ore_xingchenjin', 'ore_longwenjin', 'ore_hundunjin', 'gem_guixuyu', 'gem_longmu',
+    ['ore_xingchenjin', 'ore_longwenjin', 'ore_hundunjin', 'ore_longjin', 'gem_guixuyu', 'gem_longmu',
       'beast_kun_yu', 'beast_longlin', 'beast_longgu', 'beast_longjiao'],
   ];
 

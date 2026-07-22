@@ -65,7 +65,8 @@
  *
  * ============================ 隐藏内容 ============================
  *   藏风聚气：风水相生对 ≥5 时一次性触发祥瑞（灵玉+8、传闻 imp:1），存档标记 state.cave.fsDone。
- *   灵田欧皇：每株草药 8% 为二阶、2% 为三阶灵草，领到三阶会额外上传闻。
+ *   灵田欧皇：每株草药 8% 为二阶、2% 为三阶灵草，领到三阶会额外上传闻；
+ *   灵田精深：灵田 lv≥10 可育四阶灵草（权重 G1/G2/G4/G3 = 70/20/8/2）。
  * ===================================================================================================
  */
 (function () {
@@ -123,10 +124,11 @@
   };
   const BUILDING_IDS = ['jlz', 'lt', 'df', 'qs', 'sl', 'lm'];
 
-  // 灵田产出池（按品阶分档，roll 权重 90/8/2）
+  // 灵田产出池（按品阶分档；lv<10 权重 90/8/2，lv≥10 可育四阶草、权重 70/20/8/2）
   const POOL_G1 = ['herb_qingling', 'herb_ningxue', 'herb_ningshen', 'herb_ziye', 'herb_lingzhi', 'herb_fuling', 'herb_huangjing'];
   const POOL_G2 = ['herb_renshen', 'herb_heshouwu', 'herb_xuelian', 'herb_juling', 'herb_yuehua', 'herb_chiyang', 'herb_bingxin'];
   const POOL_G3 = ['herb_chiyancao', 'herb_longxiancao', 'herb_xuanbing', 'herb_huolingzhi', 'herb_digen', 'herb_jinxian'];
+  const POOL_G4 = ['herb_longxu', 'herb_fengwei', 'herb_yusui', 'herb_youming'];
 
   // 自动排布优选格位（金→水→木→火→土连环相生，可得 5 对）
   const AUTO_CELLS = { qs: 0, sl: 1, lt: 2, df: 5, lm: 4, jlz: 8 };
@@ -287,6 +289,13 @@
   }
   function rollHerb() {
     const r = Math.random();
+    if (getLv('lt') >= 10) {
+      // 灵田精深（lv≥10）：可育四阶灵草，权重 G1/G2/G4/G3 = 70/20/8/2
+      if (r < 0.02) return XG.util.pick(POOL_G3);
+      if (r < 0.10) return XG.util.pick(POOL_G4);
+      if (r < 0.30) return XG.util.pick(POOL_G2);
+      return XG.util.pick(POOL_G1);
+    }
     if (r < 0.02) return XG.util.pick(POOL_G3);
     if (r < 0.10) return XG.util.pick(POOL_G2);
     return XG.util.pick(POOL_G1);

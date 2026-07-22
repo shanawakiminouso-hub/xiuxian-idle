@@ -67,37 +67,37 @@
   };
 
   // ================= 丹方（34 张：修为 6 档 / 破境 4 档 / 疗伤 4 / 解毒 3 / 灵根 3 / 灵宠 3 / 打工 2 / 悟性 3 / 战斗 6，含隐藏 4） =================
-  // 数值口径：cult 立即修为 ≈ 对应境界基础 rate × 约 2.5 小时；破境 val 恒 0.15 与 cfg 一致，靠 seg 与成本拉开梯度
+  // 数值口径：cult 立即修为 ≈ 对应境界基础 rate × 约 8 小时；破境 val 恒 0.15 与 cfg 一致，靠 seg 与成本拉开梯度
   const recipes = [
     // —— 修为丹·六品阶（type:cult 立即修为） ——
     { id: 'pill_juqi', name: '聚气丹', icon: '💊', grade: 1, hidden: false, alchLv: 1,
       cost: { mat: { herb_qingling: 3, herb_ningxue: 2 }, lingShi: 200 }, time: 30,
-      eff: { type: 'cult', val: 3e5 }, tox: 2,
+      eff: { type: 'cult', val: 1e6 }, tox: 2,
       desc: '采青灵之气合凝血草而成，色作淡青。服之如甘霖灌体，修为立增，乃丹道入门第一丹。',
       getHint: '丹房初启即可参悟。' },
     { id: 'pill_ningyuan', name: '凝元丹', icon: '🔵', grade: 2, hidden: false, alchLv: 2,
       cost: { mat: { herb_juling: 3, herb_yuehua: 2 }, lingShi: 1500 }, time: 60,
-      eff: { type: 'cult', val: 1.5e6 }, tox: 3,
+      eff: { type: 'cult', val: 4.5e6 }, tox: 3,
       desc: '聚灵草承月华之露，凝作元丹。丹成之夜有微光自炉中透出，筑基修士视若珍宝。',
       getHint: '炼丹等级二阶自悟。' },
     { id: 'pill_xuanzhi', name: '玄芝丹', icon: '🟣', grade: 3, hidden: false, alchLv: 3,
       cost: { mat: { herb_yusui: 2, herb_jinxian: 2, herb_juling: 3 }, lingShi: 6000 }, time: 120,
-      eff: { type: 'cult', val: 6e6 }, tox: 4,
+      eff: { type: 'cult', val: 1.8e7 }, tox: 4,
       desc: '玉髓芝配金线兰，文火三日方成一炉。丹香清远，服之玄元充盈。',
       getHint: '炼丹等级三阶自悟。' },
     { id: 'pill_taiyi', name: '太一元丹', icon: '🟡', grade: 4, hidden: false, alchLv: 4,
       cost: { mat: { herb_tianxing: 2, herb_longxu: 2 }, lingShi: 2.5e4 }, time: 240,
-      eff: { type: 'cult', val: 2.5e7 }, tox: 5,
+      eff: { type: 'cult', val: 7.5e7 }, tox: 5,
       desc: '天星草引星辉，龙须草续地脉，两仪相济，丹成自鸣。金丹真人亦难得一炉。',
       getHint: '炼丹等级四阶自悟。' },
     { id: 'pill_jiuzhuan', name: '九转金丹', icon: '🌕', grade: 5, hidden: false, alchLv: 5,
       cost: { mat: { herb_zhuguo: 1, herb_taiyang: 2, herb_tianxing: 2 }, lingShi: 1e5 }, time: 420,
-      eff: { type: 'cult', val: 1.2e8 }, tox: 7,
+      eff: { type: 'cult', val: 3.6e8 }, tox: 7,
       desc: '九转方成，丹衣鎏金。相传古修士一粒入腹，抵得上枯坐数年。',
       getHint: '炼丹等级五阶自悟。' },
     { id: 'pill_hundun', name: '混沌一气丹', icon: '🌌', grade: 6, hidden: true, alchLv: 7, cond: 'hiddenmap',
       cost: { mat: { herb_hundun: 1, herb_puti: 1, herb_zhuguo: 2 }, lingShi: 8e5 }, time: 900,
-      eff: { type: 'cult', val: 2.5e9 }, tox: 10,
+      eff: { type: 'cult', val: 7.5e9 }, tox: 10,
       desc: '混沌青莲为引，一气化三清。丹成时炉中隐隐有开天之音，非常人所能炼。',
       getHint: '传闻龙渊深处沉有上古丹方残页，有机缘者方可参悟。' },
 

@@ -126,8 +126,11 @@
 > 注意区分：地图专属事件为 `evb_<mapId>_01~03`（两位数字）；
 > 同名隐藏连锁为 `evb_longyuan_1/2/3`、`evb_gui_xu_1/2/3`、`evb_xuanyuan_1/2/3`（一位数字，不同 id 空间，不冲突）。
 >
-> 掉落补充：万妖岭起各图 drops.mat 另含 pills.js 主登记的丹方灵草（按图阶配品：
-> 万妖岭 youming/fengwei/zhuguo，北海 longxu/hansui/yusui，焚天 dihuo/leiming/taiyang，
+> 掉落补充：青云山/落霞谷 drops.mat 另含一阶丹方灵草（qingling/ningxue、ningshen/ziye）与锻造矿 ore_jingtie，
+> 保证未建灵田/未开坊市时历练亦可采得炼丹基础草与凡铁；苍梧含 ore_zijin/ore_xingsha、万妖岭含 ore_xingchen、
+> 北海含 ore_longjin——equips.js 配方五矿（jingtie/zijin/xingchen/longjin/xingsha，与 ore_longwenjin 同名双登记先例一致）
+> 自此全部有稳定来源（爬塔 MAT_TIERS 各档同步兜底）；万妖岭起各图 drops.mat 另含 pills.js 主登记的丹方灵草（按图阶配品：
+> 万妖岭 youming/fengwei/zhuguo/tianxing，北海 longxu/hansui/yusui/wudao，焚天 dihuo/leiming/taiyang，
 > 幽冥 xueling/taiyin，归墟 xukong/tianxing/wudao/hundun，龙渊 longxian/fengxue/xuanwu/puti/busi）；
 > 灵田二阶池含 herb_yuehua。四阶以上灵草以此+坊市(≤g4)+道友赠礼(≤g4)为全部来源。
 

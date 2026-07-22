@@ -315,6 +315,7 @@
     }
     if (learnable.length) {
       H.push('<div class="uta-group">可合成参悟（' + learnable.length + '）</div>');
+      H.push('<div class="uta-row" style="margin-bottom:6px"><button class="btn btn-primary uta-btn-sm" data-act="gf:learnall">一键合成全部（' + learnable.length + '）</button></div>');
       learnable.forEach(function (v) { H.push(gfRowLearnable(v)); });
     }
     if (fragging.length) {
@@ -459,6 +460,10 @@
     if (op === 'unequip') r = G.unequip(id);
     else if (op === 'toggle') r = G.toggle(id);
     else if (op === 'learn') { r = G.learn(id); if (r && r.ok) pop('参悟成功', 'pop-good'); }
+    else if (op === 'learnall') {
+      r = G.combineAll ? G.combineAll() : { ok: false, msg: '一键合成未成。' };
+      if (r && r.ok) pop('参悟 ' + r.count + ' 部', 'pop-good');
+    }
     else if (op === 'up') r = G.upgrade(id);
     else if (op === 'upmax') { r = G.upgradeMax(id); if (r && r.ok && r.times > 0) pop('连升 ' + r.times + ' 级', 'pop-good'); }
     else if (op === 'create') {
@@ -545,7 +550,10 @@
     H.push('</div>');
     // —— 炼制中 ——
     if (st.job) {
-      H.push('<div class="card"><div class="card-title">' + esc(st.job.icon) + ' 炼制中：' + esc(st.job.name) + '</div>');
+      let autoJ = null;
+      try { autoJ = A.getAuto ? A.getAuto() : null; } catch (e) { autoJ = null; }
+      H.push('<div class="card"><div class="card-title">' + esc(st.job.icon) + ' 炼制中：' + esc(st.job.name) +
+        (autoJ ? '<span class="uta-mini"> · 🔁 连炉</span>' : '') + '</div>');
       H.push('<div class="progress"><div class="progress-fill" data-al-fill="1" style="width:' + (st.job.pct * 100) + '%"></div>' +
         '<div class="progress-text">' + Math.round(st.job.pct * 100) + '%</div></div>');
       H.push('<div class="uta-row"><span class="uta-mini" data-al-remain="1">尚余 ' + fmtTime(st.job.remainSec) + '</span>' +
@@ -579,6 +587,8 @@
     let recs = [];
     try { recs = A.listRecipes() || []; } catch (e) { recs = []; }
     if (!recs.length) return '<div class="card card-sub">丹方未载入。</div>';
+    let auto = null;
+    try { auto = A.getAuto ? A.getAuto() : null; } catch (e) { auto = null; }
     const byG = {};
     recs.forEach(function (r) { (byG[r.grade] = byG[r.grade] || []).push(r); });
     const H = [];
@@ -586,12 +596,12 @@
       const arr = byG[g];
       if (!arr || !arr.length) continue;
       H.push('<div class="uta-group">' + (CN_NUM[g] || g) + '品丹方（' + arr.length + '）</div>');
-      arr.forEach(function (r) { H.push(alRecRow(r, st)); });
+      arr.forEach(function (r) { H.push(alRecRow(r, st, auto)); });
     }
     return H.join('');
   }
 
-  function alRecRow(r, st) {
+  function alRecRow(r, st, auto) {
     // 未习得：隐藏方只露 getHint 线索；普通方示丹道门槛
     if (!r.known) {
       if (r.hidden) {
@@ -616,6 +626,9 @@
     H.push('<div class="uta-row">');
     const dis = !!st.job || !r.canCraft;
     H.push('<button class="btn btn-primary uta-btn-sm" data-act="al:craft" data-id="' + esc(r.id) + '"' + (dis ? ' disabled' : '') + '>开炉</button>');
+    const isAuto = !!(auto && auto.recipeId === r.id);
+    H.push('<button class="btn ' + (isAuto ? 'btn-primary' : 'btn-ghost') + ' uta-btn-sm" data-act="al:auto" data-id="' + esc(r.id) + '">' +
+      (isAuto ? '🔁 连炉中' : '连炉') + '</button>');
     if (st.job) H.push('<span class="uta-mini">炉火正旺，此炉占用中</span>');
     else if (!r.canCraft && r.reason) H.push('<span class="uta-no">' + esc(r.reason) + '</span>');
     H.push('</div></div>');
@@ -633,7 +646,7 @@
       '<div class="progress-text" data-al-toxtxt="1">' + Math.floor(tox.tox) + '/100</div></div>');
     if (tox.ban) H.push('<div class="uta-danger">⚠ 丹毒攻心：百脉壅塞，不可再服丹药（解毒丹豁免）</div>');
     else if (tox.slow) H.push('<div class="uta-warn">⚠ 丹毒缠体：修炼速度 −20%</div>');
-    else H.push('<div class="uta-mini">丹毒轻微，每 180 息自减 1 点。</div>');
+    else H.push('<div class="uta-mini">丹毒轻微，每 60 息自减 1 点。</div>');
     H.push('</div>');
     // —— 丹药背包 ——
     const inv = (XG.state && XG.state.inv && XG.state.inv.pill) || {};
@@ -676,6 +689,9 @@
     if (info.desc) H.push('<div class="uta-mini">' + esc(info.desc) + '</div>');
     H.push('<div class="uta-row"><button class="btn btn-primary uta-btn-sm" data-act="al:use" data-id="' + esc(info.id) + '"' +
       (info.usable ? '' : ' disabled') + '>服用</button>');
+    if (info.usable && info.count > 1) {
+      H.push('<button class="btn btn-ghost uta-btn-sm" data-act="al:useall" data-id="' + esc(info.id) + '">全服</button>');
+    }
     if (!info.usable && info.reason) H.push('<span class="uta-no">' + esc(info.reason) + '</span>');
     H.push('</div></div>');
     return H.join('');
@@ -726,6 +742,10 @@
     if (op === 'sub') { SA.sub = arg; rerender('alchemy'); return; }
     let r = null;
     if (op === 'craft') { r = A.startCraft(id); if (r && r.ok) pop('开炉', 'pop-good'); }
+    else if (op === 'auto') {
+      const cur = A.getAuto ? A.getAuto() : null;
+      r = A.setAuto(cur && cur.recipeId === id ? null : id);
+    }
     else if (op === 'cancel') r = A.cancelCraft();
     else if (op === 'buyfurnace') r = A.buyFurnace();
     else if (op === 'setfire' || op === 'fire2') r = A.setFire(id);
@@ -734,6 +754,10 @@
       if (r && r.ok && r.eff && r.eff.type === 'cult') {
         pop('+' + fmt(r.eff.val * (r.star ? 1.5 : 1)) + ' 修为', 'pop-good');
       }
+    }
+    else if (op === 'useall') {
+      r = A.useAll(id);
+      if (r && r.ok) pop('服丹 ×' + r.n, 'pop-good');
     }
     if (r && r.msg) toast(r.msg, !r.ok);
     else if (r && !r.ok) toast('行事未成', true);
@@ -919,7 +943,8 @@
         '<span class="uta-mini">成功率 ' + Math.round(ei.rate * 100) + '%' + (ei.doubled ? ' · 消耗翻倍 · 连败保底 ' + ei.pity + '/' + ei.pityMax : '') + '</span></div>');
       if (ei.lv < ei.max) {
         H.push('<div class="uta-row"><span class="uta-mini">' + costHtml(ei.cost) + '</span>' +
-          '<button class="btn btn-primary uta-btn-sm" data-act="fg:enh" data-id="' + esc(uid) + '"' + (hasRes(ei.cost) ? '' : ' disabled') + '>强化一次</button></div>');
+          '<button class="btn btn-primary uta-btn-sm" data-act="fg:enh" data-id="' + esc(uid) + '"' + (hasRes(ei.cost) ? '' : ' disabled') + '>强化一次</button>' +
+          '<button class="btn uta-btn-sm" data-act="fg:enh5" data-id="' + esc(uid) + '"' + (hasRes(ei.cost) ? '' : ' disabled') + '>强化×5</button></div>');
       } else H.push('<div class="uta-mini">已臻化境，强化圆满。</div>');
     }
     // 升星
@@ -1031,6 +1056,10 @@
     else if (op === 'enh') {
       r = F.enhance(id);
       if (r && r.ok) { toast(r.msg || (r.success ? '强化成功 +' + r.lv : '强化失败，器物无损'), !r.success); if (r.success) pop('+' + r.lv, 'pop-good'); }
+    }
+    else if (op === 'enh5') {
+      r = F.enhanceTimes ? F.enhanceTimes(id, 5) : { ok: false, err: '未成' };
+      if (r && r.ok && r.wins > 0) pop('+' + r.lv, 'pop-good');
     } else if (op === 'reforge') r = F.reforge(id, parseInt(arg, 10) || 0);
     else if (op === 'lock') r = F.toggleLock(id, parseInt(arg, 10) || 0);
     else if (op === 'gem') {

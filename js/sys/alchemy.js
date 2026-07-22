@@ -16,7 +16,7 @@
  *   变异（异火 mutPct）→极品丹：eff×1.5、icon 加★、id=recipeId+'_star' 计入 inv.pill。
  * 服用：usePill 按 eff.type 结算（cult→cultivation.addCult；break→存 buff 供突破读取，同次突破≤3 颗；
  *   heal→emit alch:heal 供战斗系统；tox→解毒；root→洗灵根/根骨+1/变异率 buff；atk/def/hp/work→限时 buff；exp→喂出战灵宠）。
- * 丹毒：服丹 +tox；tox>50 修炼速率 −20%（getMods 负值）；tox>80 禁服丹（解毒丹豁免）；tick 缓慢衰减（1 点/180 秒）；
+ * 丹毒：服丹 +tox；tox>50 修炼速率 −20%（getMods 负值）；tox>80 禁服丹（解毒丹豁免）；tick 缓慢衰减（1 点/60 秒）；
  *   丹毒达 100 置 stats.tox100=1。
  *
  * ===================== stats 键（XG.state.stats，snake） =====================
@@ -255,6 +255,19 @@
     return XG.util.clamp(v, 5, 97);
   }
 
+  // 连炉：丹成后按记忆丹方自动再开（仅在线；材料不足/丹炉不可用则中止并传闻）
+  function runAuto() {
+    const a = A();
+    if (!a.auto || a.job) return;
+    const r = startCraft(a.auto);
+    if (!r.ok) {
+      const def = recipeOf(a.auto);
+      a.auto = null;
+      pushNews('player', '连炉中止：' + r.msg + (def ? '（' + def.name + '）' : ''), 0);
+      XG.bus.emit('save:dirty');
+    }
+  }
+
   // ===================== 炼制 =====================
   function canCraft(recipeId) {
     const a = A();
@@ -263,7 +276,7 @@
     if (a.known.indexOf(recipeId) < 0) return { ok: false, reason: '尚未习得此丹方' };
     if (a.lv < r.alchLv) return { ok: false, reason: '炼丹师等级不足（需' + r.alchLv + '阶）' };
     if (a.job) return { ok: false, reason: '丹炉正忙，候此炉丹成' };
-    if (!XG.hasRes(r.cost)) return { ok: false, reason: '药材或灵石不足' };
+    if (!XG.hasRes(r.cost)) return { ok: false, reason: '药材或灵石不足（灵草产自洞府·灵田、历练山泽与坊市）' };
     return { ok: true, reason: '' };
   }
 
@@ -588,6 +601,7 @@
       if (a.fire && !a.fires[a.fire]) a.fire = null; // 装备了未持有的火则回退凡火
       if (!Array.isArray(a.known)) a.known = [];
       if (!('job' in a)) a.job = null;
+      if (!('auto' in a)) a.auto = null; // 连炉丹方 id（null=关闭）
       if (!a.buffs || typeof a.buffs !== 'object') a.buffs = {};
       if (!Array.isArray(a.breakPills)) a.breakPills = [];
       st.player.toxicity = XG.util.clamp(st.player.toxicity || 0, 0, 100);
@@ -634,8 +648,9 @@
       }
       if (expired && XG.stats) XG.stats.invalidate();
 
-      // 丹炉到期结算
+      // 丹炉到期结算（连炉开启时随即自动再开）
       if (a.job && now >= a.job.endAt) settleJob();
+      runAuto();
 
       // 地肺真火：洞府丹房（df）≥1 级自动引地火入丹房（每 5 秒轮询一次）
       this._fireCheckCd = (this._fireCheckCd || 0) - dt;
@@ -774,6 +789,41 @@
     canCraft: canCraft,
     startCraft: startCraft,
     cancelCraft: cancelCraft,
+
+    // 连炉：id=丹方 id 开启（需已习得），null 关闭；丹成后自动按同方再开，材料尽/不可用自动中止
+    setAuto(recipeId) {
+      const a = A();
+      if (!recipeId) { a.auto = null; XG.bus.emit('save:dirty'); return { ok: true, msg: '连炉已停止。' }; }
+      const r = recipeOf(recipeId);
+      if (!r) return { ok: false, msg: '丹方不存在。' };
+      if (a.known.indexOf(recipeId) < 0) return { ok: false, msg: '尚未习得此丹方。' };
+      a.auto = recipeId;
+      XG.bus.emit('save:dirty');
+      return { ok: true, msg: '连炉已开启：' + r.name + '，丹成自动再开。' };
+    },
+    getAuto() {
+      const a = A();
+      if (!a.auto) return null;
+      const r = recipeOf(a.auto);
+      return { recipeId: a.auto, name: r ? r.name : a.auto, icon: r ? r.icon : '丹' };
+    },
+
+    // 一键服丹：连续服用至丹尽或不可再服（丹毒>80/境界不合/破境丹满 3 颗自动停）
+    useAll(pillId) {
+      let n = 0, last = null;
+      for (let i = 0; i < 200; i++) {
+        const r = usePill(pillId);
+        if (!r || !r.ok) { last = r; break; }
+        n++;
+        last = r;
+      }
+      if (!n) return { ok: false, n: 0, msg: (last && last.msg) || '无可服之丹。' };
+      const info = this.pillInfo(pillId);
+      return {
+        ok: true, n: n,
+        msg: '服下' + (info ? info.name : '丹药') + '×' + n + (last && last.msg ? '。' + last.msg : ''),
+      };
+    },
 
     buyFurnace() {
       const a = A();

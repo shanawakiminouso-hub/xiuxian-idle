@@ -16,6 +16,8 @@
  * - 隐藏图：归墟 cond youming_exp_30（幽冥涧派遣满30次 + 大乘1层，自动解锁+news）；
  *   龙渊 cond guixu_bi_5（渡劫1层 + 消耗 sp_guixu_bi×5 献祭，自动解锁+news）。
  * - quickDispatch：自动为空余栏位挑空闲最强 ≤3 宠，选「地图阶位×战力系数」最高的已解锁图派中途档（3分钟）。
+ * - 连续历练：setAuto 记忆派遣配置，队伍结算后由 tick 按同配置自动再派（仅在线接续；
+ *   离线结算不连派，回到线上后自动恢复）；地图不可达/派遣失败时自动中止并发传闻。
  * - offline：启动时结算所有已到期队伍（未到期按剩余时间跳过，不补扣不加速）。
  *
  * ============================ stats 写入键（XG.state.stats，snake_case） ============================
@@ -50,6 +52,8 @@
  *   estimateFactor(mapId, petUids) → {factor, teamPower, need}
  *   dispatch(mapId, petUids, durIdx) → {ok, msg, team?}
  *   quickDispatch() → {ok, msg:[...]}                一键派遣（契约 quick 操作口径）
+ *   setAuto(cfg|null) → {ok,msg}                     连续历练开关（cfg={mapId, petUids, durIdx}）
+ *   getAuto() → null|{mapId, petUids, durIdx, mapName, durLabel}
  *   getLog() → [{t,mapId,mapName,dur,factor,mat,pill,frag,egg,recipe,hongyun}]  最新在前，上限20
  *   checkHidden() → 手动触发隐藏图条件检查（境界突破后 UI 可调，tick 每秒也会自检）
  *
@@ -88,6 +92,7 @@
     e.slots = e.slots || {};   // {s2:true, s3:true} 灵玉购买的栏位
     e.hidden = e.hidden || {}; // {guixu:1, longyuan:1} 已解锁隐藏图
     e.seen = e.seen || {};     // 已播过解锁传闻的地图 id
+    if (e.auto === undefined) e.auto = null; // 连续历练配置 {mapId, petUids, durIdx}（null=关闭）
     return e;
   }
   function stats() { return (XG.state.stats = XG.state.stats || {}); }
@@ -601,6 +606,28 @@
   }
   function getLog() { return st().log; }
 
+  /* ---------------- 连续历练（结算后按记忆配置自动再派；仅在线接续，离线结算不连派） ---------------- */
+  function runAuto() {
+    const e = st();
+    const a = e.auto;
+    if (!a || e.active.length >= maxSlots()) return;
+    const map = getMap(a.mapId);
+    if (!map || !isMapUnlocked(map)) {
+      e.auto = null;
+      pushNews('world', '连续历练中止：' + (map ? '「' + map.name + '」之路已断，机缘不再。' : '目的地已不可达。'), 0);
+      dirty();
+      return;
+    }
+    // 灵宠忙/不在囊中者自动剔除；全体不可遣则独自历练亦可（dispatch 支持空队）
+    const uids = (a.petUids || []).filter(function (u) { return findPet(u) && !isPetBusy(u); });
+    const r = dispatch(a.mapId, uids, a.durIdx);
+    if (!r.ok) {
+      e.auto = null;
+      pushNews('world', '连续历练中止：' + r.msg, 0);
+      dirty();
+    }
+  }
+
   /* ---------------- 模块协议（契约 §10） ---------------- */
   XG.sys.expedition = {
     id: 'expedition',
@@ -620,7 +647,7 @@
       refreshUnlockStats();
     },
 
-    // 每秒：结算到期队伍 + 隐藏图条件自检 + 新图解锁播报
+    // 每秒：结算到期队伍 + 连续历练接续 + 隐藏图条件自检 + 新图解锁播报
     tick(dt) {
       const e = st();
       const now = Date.now();
@@ -631,6 +658,7 @@
           settleTeam(t, false);
         }
       }
+      runAuto();
       checkHidden();
       checkMapNews();
     },
@@ -667,6 +695,23 @@
     estimateFactor: estimateFactor,
     dispatch: dispatch,
     quickDispatch: quickDispatch,
+    // 连续历练：cfg={mapId, petUids, durIdx} 开启，null 关闭
+    setAuto: function (cfg) {
+      const e = st();
+      if (!cfg) { e.auto = null; dirty(); return { ok: true, msg: '连续历练已停止。' }; }
+      const map = getMap(cfg.mapId);
+      if (!map || !isMapUnlocked(map)) return { ok: false, msg: '此图不可连续历练。' };
+      e.auto = { mapId: cfg.mapId, petUids: (cfg.petUids || []).slice(), durIdx: cfg.durIdx | 0 };
+      dirty();
+      return { ok: true, msg: '连续历练已开启：' + map.name + '，归来后自动再派。' };
+    },
+    getAuto: function () {
+      const a = st().auto;
+      if (!a) return null;
+      const m = getMap(a.mapId) || {};
+      const opt = DUR_OPTS[a.durIdx] || DUR_OPTS[0];
+      return { mapId: a.mapId, petUids: a.petUids.slice(), durIdx: a.durIdx, mapName: m.name || a.mapId, durLabel: opt.label };
+    },
     getLog: getLog,
     checkHidden: checkHidden,
   };

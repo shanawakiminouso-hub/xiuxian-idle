@@ -563,6 +563,7 @@
     const gfs = (XG.data.gongfa && XG.data.gongfa.list) || [];
     const mats = XG.data.mats || {};
     const sellPool = (XG.data.fellows.marketLines && XG.data.fellows.marketLines.sell) || [];
+    const usedRecipe = {}; // 同批丹方栏去重
 
     for (let i = 0; i < (mr.slots || 6); i++) {
       const seller = u.pick(fs);
@@ -570,7 +571,7 @@
       let kind = u.weighted([
         { k: 'pill', w: mr.stock.kindW.pill || 30 }, { k: 'mat', w: mr.stock.kindW.mat || 30 },
         { k: 'equip', w: mr.stock.kindW.equip || 20 }, { k: 'frag', w: mr.stock.kindW.frag || 15 },
-        { k: 'egg', w: mr.stock.kindW.egg || 5 },
+        { k: 'egg', w: mr.stock.kindW.egg || 5 }, { k: 'recipe', w: mr.stock.kindW.recipe || 8 },
       ], 'w').k;
       // 炼器未开（坊市已提前至筑基5层）时不挂装备栏，降级为材料，免玩家买到只能折矿的货
       if (kind === 'equip' && !(XG.cfg && XG.cfg.isUnlocked && XG.cfg.isUnlocked('forge'))) kind = 'mat';
@@ -607,6 +608,20 @@
         slot.id = g2.id; slot.name = g2.name + '残篇'; slot.icon = g2.icon; slot.grade = g2.grade;
         slot.n = u.randInt(1, 3);
         slot.price = (bp.fragPerGrade || 1500) * g2.grade;
+      } else if (kind === 'recipe') {
+        // 丹方栏：卖未习得丹方（含 merchant 隐藏方 pill_puti——其唯一习得渠道），灵玉计价不浮动
+        const known = (XG.state.alchemy && XG.state.alchemy.known) || [];
+        const pool = pills.filter(function (r) {
+          if (known.indexOf(r.id) >= 0) return false;
+          if (r.hidden && r.id !== 'pill_puti') return false;
+          return r.grade <= Math.min(9, p.realmIdx + 3);
+        });
+        if (!pool.length) continue;
+        const r = u.pick(pool);
+        if (usedRecipe[r.id]) continue; // 同批不重复
+        usedRecipe[r.id] = 1;
+        slot.id = r.id; slot.name = '丹方·' + r.name; slot.icon = r.icon; slot.grade = r.grade;
+        slot.n = 1; slot.price = r.grade * 3; slot.cur = 'lingYu'; slot.fixed = true;
       } else { // egg
         slot.id = 'egg'; slot.name = '灵宠蛋'; slot.icon = '🥚'; slot.grade = 1;
         slot.price = bp.egg || 3e4;
@@ -628,20 +643,23 @@
       }
 
       // 售价 = 基准 × 性格 pricePct × 关系折让；货币按权重（约两成灵玉标价）
-      const rel = mr.priceByRelation[seller.relation] != null ? mr.priceByRelation[seller.relation] : 1;
-      let price = slot.price * (mr.priceByPersona[seller.persona] || persona.pricePct || 1) * rel;
-      // 轮回天赋/转世身份坊市折扣（reincarn.getMods 输出、stats.calc 透传键 marketDiscPct；
-      // 防御性缺省 0；下限保护最多 7 折，防叠加跌破成本）
-      let discPct = 0;
-      try { discPct = (XG.stats && XG.stats.get().marketDiscPct) || 0; } catch (e) { discPct = 0; }
-      if (!isFinite(discPct)) discPct = 0;
-      price *= Math.max(0.7, 1 - discPct / 100);
-      const cur = u.weighted([
-        { k: 'lingShi', w: (mr.stock.currencyW && mr.stock.currencyW.lingShi) || 8 },
-        { k: 'lingYu', w: (mr.stock.currencyW && mr.stock.currencyW.lingYu) || 2 },
-      ], 'w').k;
-      slot.cur = cur;
-      slot.price = cur === 'lingYu' ? Math.max(1, Math.round(price / 500)) : Math.max(1, Math.round(price));
+      // （fixed=丹方栏：灵玉固定价，不参与浮动与货币重 roll）
+      if (!slot.fixed) {
+        const rel = mr.priceByRelation[seller.relation] != null ? mr.priceByRelation[seller.relation] : 1;
+        let price = slot.price * (mr.priceByPersona[seller.persona] || persona.pricePct || 1) * rel;
+        // 轮回天赋/转世身份坊市折扣（reincarn.getMods 输出、stats.calc 透传键 marketDiscPct；
+        // 防御性缺省 0；下限保护最多 7 折，防叠加跌破成本）
+        let discPct = 0;
+        try { discPct = (XG.stats && XG.stats.get().marketDiscPct) || 0; } catch (e) { discPct = 0; }
+        if (!isFinite(discPct)) discPct = 0;
+        price *= Math.max(0.7, 1 - discPct / 100);
+        const cur = u.weighted([
+          { k: 'lingShi', w: (mr.stock.currencyW && mr.stock.currencyW.lingShi) || 8 },
+          { k: 'lingYu', w: (mr.stock.currencyW && mr.stock.currencyW.lingYu) || 2 },
+        ], 'w').k;
+        slot.cur = cur;
+        slot.price = cur === 'lingYu' ? Math.max(1, Math.round(price / 500)) : Math.max(1, Math.round(price));
+      }
       slot.line = sellPool.length ? fill(u.pick(sellPool), seller, { item: slot.name }) : '';
       st.slots.push(slot);
     }
@@ -945,6 +963,11 @@
       for (const s of st.slots) if (s.sid === sid) { slot = s; break; }
       if (!slot) return { ok: false, msg: '这宗买卖已不在了。' };
       if (slot.sold || slot.n <= 0) return { ok: false, msg: '此货已售罄。' };
+      // 丹方栏：已参悟者在扣费前拦截（丹方池按生成时快照，期间可能已从别处习得）
+      if (slot.kind === 'recipe') {
+        const known0 = (XG.state.alchemy && XG.state.alchemy.known) || [];
+        if (known0.indexOf(slot.id) >= 0) return { ok: false, msg: '此丹方你已参悟，这宗买卖作罢。' };
+      }
       const cost = { [slot.cur]: slot.price };
       if (!XG.hasRes(cost)) return { ok: false, msg: (slot.cur === 'lingYu' ? '灵玉' : '灵石') + '不足。' };
       XG.addRes({ [slot.cur]: -slot.price });
@@ -954,6 +977,16 @@
       if (slot.kind === 'mat') XG.addRes({ mat: { [slot.id]: 1 } });
       else if (slot.kind === 'pill') XG.addRes({ pill: { [slot.id]: 1 } });
       else if (slot.kind === 'egg') XG.addRes({ egg: 1 });
+      else if (slot.kind === 'recipe') {
+        const al = XG.sys.alchemy;
+        if (al && typeof al.learn === 'function') {
+          al.learn(slot.id);
+          got = slot.name + '（已参悟）';
+        } else {
+          XG.addRes({ lingShi: 2000 });
+          got += '（丹道未开，折算灵石）';
+        }
+      }
       else if (slot.kind === 'frag') {
         const g = XG.sys.gongfa;
         if (g && typeof g.addFrag === 'function') g.addFrag(slot.id, 1);

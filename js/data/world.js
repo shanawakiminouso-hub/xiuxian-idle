@@ -108,6 +108,8 @@
           ore_qingtong: [1, 3, 9], ore_heite: [1, 2, 7],
           beast_huya: [1, 2, 5], beast_tuling: [1, 2, 5],
           gem_lingcui: [1, 1, 3],
+          herb_qingling: [1, 2, 8], herb_ningxue: [1, 2, 7],
+          ore_jingtie: [1, 2, 8],
         },
         pill: { g1: [1, 1, 5] }, frag: { g1: [1, 1, 4] },
         eggChance: 0.06, recipeChance: 0.03,
@@ -125,6 +127,8 @@
           ore_wuxingsha: [1, 2, 8], ore_qingtong: [1, 3, 7],
           beast_shelin: [1, 2, 5], beast_xiongdan: [1, 1, 5],
           gem_zijing: [1, 1, 4],
+          herb_ningshen: [1, 2, 5], herb_ziye: [1, 1, 4],
+          ore_jingtie: [1, 2, 7],
         },
         pill: { g1: [1, 1, 4], g2: [1, 1, 2] }, frag: { g1: [1, 1, 3], g2: [1, 1, 1] },
         eggChance: 0.05, recipeChance: 0.04,
@@ -142,6 +146,7 @@
           ore_xuantie: [1, 3, 9], ore_wuxingsha: [1, 2, 7],
           beast_shelin: [1, 2, 6], beast_xiongdan: [1, 1, 4],
           gem_biyu: [1, 1, 4],
+          ore_zijin: [1, 2, 7], ore_xingsha: [1, 1, 4],
         },
         pill: { g2: [1, 1, 5] }, frag: { g2: [1, 1, 4], g3: [1, 1, 1] },
         eggChance: 0.05, recipeChance: 0.04,
@@ -160,6 +165,7 @@
           beast_yaodan: [1, 2, 7], beast_jiaowei: [1, 2, 6],
           gem_zijing: [1, 1, 5], gem_xuepo: [1, 1, 4],
           herb_youming: [1, 2, 7], herb_fengwei: [1, 1, 5], herb_zhuguo: [1, 1, 3],
+          herb_tianxing: [1, 1, 4], ore_xingchen: [1, 2, 7],
         },
         pill: { g3: [1, 1, 5] }, frag: { g3: [1, 1, 4] },
         eggChance: 0.07, recipeChance: 0.04,
@@ -178,6 +184,7 @@
           beast_bingjiao_lin: [1, 2, 7], beast_jiaowei: [1, 2, 5],
           gem_hanyu: [1, 1, 5], gem_xinghui: [1, 1, 3],
           herb_longxu: [1, 2, 7], herb_hansui: [1, 1, 5], herb_yusui: [1, 1, 4],
+          herb_wudao: [1, 1, 4], ore_longjin: [1, 1, 5],
         },
         pill: { g4: [1, 1, 4] }, frag: { g4: [1, 1, 3] },
         eggChance: 0.04, recipeChance: 0.05,
@@ -362,7 +369,7 @@
     // 关系价格折让（挚友八折、道侣七五折、宿敌加价两成）
     priceByRelation: { stranger: 1.0, friend: 0.8, rival: 1.2, partner: 0.75 },
     stock: {
-      kindW: { pill: 30, mat: 30, equip: 20, frag: 15, egg: 5 }, // 品类抽取权重：丹药/材料/装备/残篇/灵宠蛋
+      kindW: { pill: 30, mat: 30, equip: 20, frag: 15, egg: 5, recipe: 8 }, // 品类抽取权重：丹药/材料/装备/残篇/灵宠蛋/丹方
       // 基准价（灵石；售价在此基础上乘性格与关系倍率）
       basePrice: {
         matG0: 50, matG1: 300, matG2: 2e3, matG3: 1.5e4, matG4: 1e5, // 材料按 grade

@@ -409,6 +409,13 @@
       h += '</div>';
     });
     h += '</div>';
+    let auto = null;
+    try { auto = s.getAuto ? s.getAuto() : null; } catch (e) { auto = null; }
+    if (auto) {
+      h += '<div class="tbb-rowline" style="margin-top:6px"><span style="color:var(--qing-d)">🔁 连续历练中：'
+        + esc(auto.mapName) + '（' + esc(auto.durLabel) + '），归来自动再派</span><span class="tbb-sp"></span>'
+        + '<button class="btn tbb-mini" data-act="exp-auto-stop">停止</button></div>';
+    }
     z.innerHTML = h;
   }
 
@@ -518,6 +525,9 @@
         + esc(d.label) + '（×' + d.mul + '）</button>';
     });
     h += '</div>';
+    h += '<div class="tbb-rowline" style="margin-top:8px"><span class="muted">连续历练：归来后按同配置自动再派</span><span class="tbb-sp"></span>'
+      + '<button class="btn tbb-mini' + (exp.sel.auto ? ' btn-primary' : '') + '" data-mact="auto">'
+      + (exp.sel.auto ? '🔁 已开启' : '已关闭') + '</button></div>';
     if (est) {
       h += '<div class="card-sub" style="margin-top:8px">队伍战力 ' + fmt(est.teamPower) + ' / 需求 ' + fmt(est.need)
         + ' · 预计收益系数 <b style="color:' + (est.factor >= 1 ? 'var(--qing-d)' : 'var(--danger)') + '">' + pct(est.factor) + '</b></div>';
@@ -530,7 +540,7 @@
   function openDispatch(mapId) {
     const s = expSys();
     if (!s) return;
-    exp.sel = { mapId: mapId, pets: {}, durIdx: 1 };
+    exp.sel = { mapId: mapId, pets: {}, durIdx: 1, auto: false };
     if (!openModal('派遣历练', '<div id="tbb-disp-body"></div>', (act, ds) => {
       if (!exp.sel) return;
       if (act === 'pet') {
@@ -544,12 +554,18 @@
       } else if (act === 'dur') {
         exp.sel.durIdx = Number(ds.i) || 0;
         renderDispatchBody();
+      } else if (act === 'auto') {
+        exp.sel.auto = !exp.sel.auto;
+        renderDispatchBody();
       } else if (act === 'go') {
         const uids = Object.keys(exp.sel.pets).filter((k) => exp.sel.pets[k]);
         try {
           const r = s.dispatch(exp.sel.mapId, uids, exp.sel.durIdx);
           toast((r && r.msg) || (r && r.ok ? '队伍已启程' : '派遣失败'));
-          if (r && r.ok) { closeModal(); exp.sel = null; renderExpAll(); }
+          if (r && r.ok) {
+            if (exp.sel.auto && s.setAuto) s.setAuto({ mapId: exp.sel.mapId, petUids: uids, durIdx: exp.sel.durIdx });
+            closeModal(); exp.sel = null; renderExpAll();
+          }
         } catch (e) { toast('派遣失败'); }
       }
     })) { exp.sel = null; return; }
@@ -582,6 +598,9 @@
           } else if (act === 'exp-slot') {
             const r = s.unlockSlot(Number(t.dataset.idx));
             toast((r && r.msg) || '');
+            renderExpAll();
+          } else if (act === 'exp-auto-stop') {
+            if (s.setAuto) { const r = s.setAuto(null); toast((r && r.msg) || '连续历练已停止。'); }
             renderExpAll();
           }
         } catch (e) { toast('操作失败，请重试'); }

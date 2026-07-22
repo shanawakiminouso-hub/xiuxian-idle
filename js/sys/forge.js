@@ -388,6 +388,28 @@
     return { ok: true, success: false, lv: eq.enh, rate: info.rate, pity: eq.enhFails || 0, msg: '强化失败，炉火一滞，所幸器物无损。（不掉级）' };
   }
 
+  // 连续强化 n 次：满级/材料不足即停；返回成功次数与最终等级
+  function enhanceTimes(uid, n) {
+    n = Math.max(1, Math.min(20, n | 0));
+    let done = 0, wins = 0, last = null;
+    for (let i = 0; i < n; i++) {
+      const r = enhance(uid);
+      if (!r || !r.ok) { last = r; break; }
+      done++;
+      if (r.success) wins++;
+      last = r;
+      const eq = getEquip(uid);
+      if (eq && (eq.enh || 0) >= 20) break;
+    }
+    const eq = getEquip(uid);
+    const lv = eq ? (eq.enh || 0) : 0;
+    if (!done) return { ok: false, err: (last && (last.err || last.msg)) || '无法强化' };
+    return {
+      ok: true, times: done, wins: wins, lv: lv,
+      msg: '连锤 ' + done + ' 次，成 ' + wins + ' 次，「' + (eq ? baseOf(eq.baseId).name : '装备') + '」现 +' + lv + '。',
+    };
+  }
+
   /* ==================== 洗练（重 roll 单条词条） ==================== */
   // 费用：基础 (2+2×grade) 灵玉 + 每条已锁定词条加收 (1+grade)
   function reforgeCost(uid) {
@@ -841,6 +863,7 @@
 
     // 强化
     enhance: enhance,
+    enhanceTimes: enhanceTimes,
     enhanceInfo: enhanceInfo,
     enhRate: enhRate,
 

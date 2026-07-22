@@ -246,16 +246,38 @@
       if (def.cond !== cond || g.hiddenUnlock[def.id]) continue;
       g.hiddenUnlock[def.id] = 1;
       bump('gongfa_hidden_unlock');
-      pushNews('system', '天机显现！隐藏功法《' + def.name + '》现世，集齐残篇即可参悟。', 2);
+      grantHiddenFrags(def);
+      pushNews('system', '天机显现！隐藏功法《' + def.name + '》现世，残篇已齐备，可前往合成参悟。', 2);
       XG.bus.emit('codex:new', { kind: 'gongfa', id: def.id });
     }
     dirty();
   }
 
-  // 全量校验 5 个隐藏条件（init 自恢复 + tick 兜底）
+  // 隐藏功法残篇保送：解锁（cond 达成/境界达标）即一次性补足残篇至 fragNeed。
+  // 缘由：随机残篇池一律过滤 hidden，连锁终点各仅 ×2 片，隐藏功法曾解锁亦永不可合成。
+  // granted 防重（含老档一次性补发）；已习得/残篇已足者仅标记。
+  function grantHiddenFrags(def) {
+    const g = st();
+    g.granted = g.granted || {};
+    if (g.granted[def.id] || g.owned[def.id]) return;
+    const need = def.fragNeed || 0;
+    if (!need) { g.granted[def.id] = 1; return; }
+    const have = fragOf(def.id);
+    g.granted[def.id] = 1;
+    if (have >= need) return;
+    addFrag(def.id, need - have);
+    pushNews('system', '《' + def.name + '》残篇 ' + (need - have) + ' 片随天机而至，已然集齐。', 1);
+  }
+
+  // 全量校验 5 个隐藏条件（init 自恢复 + tick 兜底）；顺带为境界解锁型隐藏功法（轩辕/归墟）保送残篇
   function checkConds() {
     for (let i = 0; i < HIDDEN_CONDS.length; i++) {
       if (condMet(HIDDEN_CONDS[i])) unlockByCond(HIDDEN_CONDS[i]);
+    }
+    const list = (XG.data.gongfa && XG.data.gongfa.list) || [];
+    for (let i = 0; i < list.length; i++) {
+      const def = list[i];
+      if (def.hidden && !def.cond && unlockOk(def)) grantHiddenFrags(def);
     }
   }
 
@@ -685,6 +707,24 @@
     getDef: getDef,
     unlockOk: unlockOk,
     learn: learn,
+
+    // 一键合成：批量参悟全部残篇已集满且已解锁的未学功法（契约 quick 操作口径）
+    combineAll() {
+      const g = st();
+      const list = (XG.data.gongfa && XG.data.gongfa.list) || [];
+      const out = [];
+      for (let i = 0; i < list.length; i++) {
+        const def = list[i];
+        if (!def || g.owned[def.id]) continue;
+        if (!unlockOk(def)) continue;
+        const need = def.fragNeed || 0;
+        if (need <= 0 || fragOf(def.id) < need) continue;
+        const r = learn(def.id);
+        if (r && r.ok) out.push(def.name);
+      }
+      if (!out.length) return { ok: false, msg: '暂无可合成的功法（残篇不足或均已习得）。' };
+      return { ok: true, count: out.length, msg: '合成参悟《' + out.join('》《') + '》，共 ' + out.length + ' 部。' };
+    },
     upgrade: upgrade,
     upgradeMax: upgradeMax,
     upCost: upCost,
