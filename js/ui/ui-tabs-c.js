@@ -318,7 +318,10 @@
     } else if (act === 'f-discuss-all') {
       if (!fs) return;
       let r = null;
+      // 批量论道期间静音逐人跳字，结束后只跳一次总收益
+      if (XG.ui && XG.ui.popMute) XG.ui.popMute(true);
       try { r = fs.discussAll(); } catch (err) { r = null; }
+      if (XG.ui && XG.ui.popMute) XG.ui.popMute(false);
       if (!r) { toast('论道未成。', 'err'); return; }
       toast(r.msg, r.ok ? undefined : 'err');
       if (r.ok && r.cult) pop('修为+' + fmt(r.cult), 'pop-good');
@@ -415,11 +418,12 @@
         + '<div class="xtc-mrow"><span>卖家 · ' + esc(s.sellerName) + '</span><span class="xtc-tag">' + esc(personaName(s.persona)) + '</span></div>'
         + '<div class="row" style="margin:6px 0 2px;flex-wrap:nowrap"><span style="font-size:22px;flex:none">' + esc(s.icon || '📦') + '</span>'
         + '<div style="min-width:0"><b>' + esc(s.name) + '</b>' + (g ? '<div class="muted">' + esc(g) + '</div>' : '') + '</div></div>'
-        + (s.line ? '<div class="muted" style="font-size:12px">「' + esc(s.line) + '」</div>' : '')
+        + (s.line ? '<div class="muted" style="font-size:12px">' + esc(s.line) + '</div>' : '')
         + '<div style="margin:4px 0">'
-        + (base && base !== s.price ? '<span class="xtc-old">' + fmt(base) + '</span>' : '')
+        + (base && base > s.price ? '<span class="xtc-old">' + fmt(base) + '</span>' : '')
         + '<span class="xtc-price">' + fmt(s.price) + '</span> <span class="muted">' + esc(s.curName) + '</span>'
-        + '<span class="muted" style="float:right">限量 ×' + fmtInt(s.n) + '</span></div>'
+        + (base && base < s.price ? '<span class="muted" style="font-size:12px">（基准 ' + fmt(base) + '，卖家抬价）</span>' : '')
+        + '<span class="muted" style="float:right">余量 ×' + fmtInt(s.n) + '</span></div>'
         + '<button class="btn btn-primary" style="width:100%" data-act="m-buy" data-sid="' + esc(s.sid) + '"'
         + (s.sold ? ' disabled' : '') + '>' + (s.sold ? '已售罄' : '买下') + '</button>'
         + '</div>';

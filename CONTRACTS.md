@@ -111,7 +111,7 @@ XG.cfg.REALMS = [
 ];
 XG.cfg.LAYERS = 10;                    // 每个大境界 10 层小境界
 XG.cfg.layerCost(realmIdx, layer)      // = baseCost * layer^2.2（返回 number）
-XG.cfg.OFFLINE_CAP_H = 8;              // 离线收益上限 8 小时
+XG.cfg.OFFLINE_CAP_H = 48;             // 离线收益上限 48 小时
 XG.cfg.BREAK_FAIL_BONUS = 0.08;        // 突破失败不清零，保底成功率逐次 +8%（成功清零）
 XG.cfg.BREAK_PILL_BONUS = 0.15;        // 每颗破境丹 +15%（最多用 3 颗）
 XG.cfg.NEWS_CAP = 200;                 // 传闻缓存上限
@@ -151,7 +151,7 @@ XG.state = {
   cave: { lv: { jlz:1, lt:0, df:0, qs:0, sl:0, lm:1 }, layout: {} },        // 建筑等级 + 3x3 摆放 {格位: buildingId}
   expedition: { active: [], log: [] },                       // 进行中派遣 {mapId, petUids, endAt, dur}
   dungeon: { tower: 1, towerBest: 1, guard: 0, hunt: 0, sweepFree: 3, sweepDay: '', week: '', affixes: [] },
-  pvp: { pts: 1000, wins: 0, losses: 0, season: '', claimed: '', history: [] },
+  pvp: { pts: 1000, wins: 0, losses: 0, streak: 0, season: '', claimed: '', history: [] },
   fellows: [],                                               // 见 §11
   news: [],                                                  // {t, cat, text, imp} 新→旧, 上限 NEWS_CAP
   ach: {},                                                   // {id: {done:1, claimed:1}}
@@ -300,7 +300,7 @@ XG.sys.xxx = {
 - `sys/cave.js`：建筑升级（耗灵石+材料）、产出（灵田草药/h、聚灵阵修炼%、兽栏宠物位）、3x3 风水摆放（相邻相生+5%，五行循环）、灵脉等级=建筑上限。
 - `sys/expedition.js`：地图解锁、派遣（选 1~3 宠 + 时长档）、特产/事件触发、隐藏图条件、一键派遣（自动最优）。
 - `sys/dungeon.js`：爬塔(无尽，每层战力校验，掉落装备/材料；每33层隐藏BOSS)、守关(波次生存)、限时寻宝(300s 点击/自动寻宝箱，每日前10次免费)、周词缀（mulberry32(weekId) 选 3 条）、扫荡（每日免费30次+灵玉）。
-- `sys/pvp.js`：匹配战力±30% 的道友、自动战斗（流派克制+战力+随机）、段位（青铜→仙尊，pts 阈值）、赛季(weekId)结算奖励、战报 history(≤20)。
+- `sys/pvp.js`：匹配战力±30% 的道友、自动战斗（流派克制+战力+随机）、段位（青铜→仙尊，pts 阈值）、连胜加成（2 连胜起胜场 +3/场递增、封顶 +30，败北清零）、赛季(weekId)结算奖励、战报 history(≤20)。
 - `sys/adventure.js`：修炼中每 5~15 分钟 roll 一次（权重×条件过滤）、探索时必触发 1 次/次、连锁队列、once 记录、冷却。
 - `sys/fellows.js`：生成 30~50 道友（名字/性格/流派/灵根/成长曲线/状态机 normal|stuck|surge|trib）、离线分 5 分钟步进模拟其修为与事件并产 news、论道(每友10分钟冷却: 修为+好感+按性格出文案；另有一键论道)、求助(每4小时一波)/回赠、坊市挂售(market 规则)、宿敌(境界差≤1 大境界 且 power 相近→排行互超时发战书)、挚友(好感≥60 突破送礼)、道侣(好感=100 结缘: 永久 cultRate+10%、专属剧情 news、双修每小时1次)、克制刷屏：news 生成按概率采样。
 - `sys/reincarn.js`：渡劫10层后开启飞升挑战（天劫 9 波战力校验+丹药消耗）、成功→轮回: 保留 codex/ach/永久buff/灵玉×20%、重置其余；轮回点 rp=境界累计+成就数/10；天赋树 15 节点 3 支（修炼/战斗/机缘，data 内嵌本文件）；转世身份随机表 ≥12（影响开局灵根/资源/初始功法）。
@@ -346,6 +346,6 @@ XG.sys.xxx = {
 
 - [ ] file:// 直接打开无控制台报错
 - [ ] 内容量：功法≥20(隐藏5)、丹方≥30、灵宠≥30、词条≥30、地图≥8(隐藏2)、事件≥80(连锁≥6)、成就≥50(隐藏10)、道友30~50、性格≥10、文案≥200、名字库≥200
-- [ ] 离线 8h 结算弹窗；道友离线有动态
+- [ ] 离线 48h 结算弹窗；道友离线有动态
 - [ ] 一键领取/修炼/派遣/扫荡可用
 - [ ] 存档导出/导入可用

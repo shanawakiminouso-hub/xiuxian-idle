@@ -135,15 +135,23 @@
   }
   function speciesOf(pet) {
     if (!pet || !XG.data.pets) return null;
-    const sid = pet.spId || pet.speciesId || pet.species || pet.sid;
+    const sid = pet.sp || pet.spId || pet.speciesId || pet.species || pet.sid;
     if (!sid) return null;
     const sp = XG.data.pets.species || [];
     for (let i = 0; i < sp.length; i++) if (sp[i].id === sid) return sp[i];
     return null;
   }
-  // 单宠战力估算：优先用实例自身 atk/def/hp/spd；缺则按物种 base × 等级成长(8%/级) × 资质倍率 × 觉醒加成
+  // 单宠战力：优先委托 pets 系统权威口径 powerOf（实例字段以其为准）；
+  // 缺则本地估算——物种 base × 等级成长(8%/级) × 资质倍率 × 觉醒加成
   function petPower(pet) {
     if (!pet) return 0;
+    const ps = XG.sys.pets;
+    if (ps && typeof ps.powerOf === 'function') {
+      try {
+        const v = ps.powerOf(pet.uid);
+        if (typeof v === 'number' && v > 0) return v;
+      } catch (e) { /* 降级本地估算 */ }
+    }
     if (typeof pet.atk === 'number' && typeof pet.def === 'number' && typeof pet.hp === 'number') {
       return XG.cfg.POWER({ atk: pet.atk, def: pet.def, hp: pet.hp, spd: pet.spd || 10 });
     }

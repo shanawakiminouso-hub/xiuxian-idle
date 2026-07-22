@@ -3,7 +3,8 @@
  * 玩法：对手池=state.fellows（道友）；匹配=玩家战力±40% 筛选 + 强度贴近/宿敌偏好，无匹配时全表随机；
  *      战斗自动结算：双方战力 × 流派克制（剑→符→阵→丹→体→剑，克制方 +15%）× 随机 0.9~1.1，三局两胜；
  *      赛季=weekId，段位 pts 阈值：青铜0/白银1200/黄金1500/白金1800/钻石2100/仙尊2500；
- *      胜 +30 / 负 -15（按对手强度浮动）；每日前 5 场发灵石+修为，之后仅 pts；战报 history ≤20；
+ *      胜 +30 / 负 -15（按对手强度浮动）；连胜加成：2 连胜起每场胜利 +3 递增、封顶 +30（败北清零）；
+ *      每日前 5 场发灵石+修为，之后仅 pts；战报 history ≤20；
  *      跨周赛季结算：按当前段位发灵玉+随机残篇，进入可补领列表（上周没打也发基础奖，不惩罚缺席）；
  *      宿敌联动：对手 relation==='rival' 时防御性调 XG.sys.fellows.onRivalBattle(win, uid)，
  *      fellows 系统未就位时自行用 lines.war 文案池发战书 news 兜底。
@@ -21,7 +22,8 @@
  *       delta, pts,                          // pts 变化量与赛后总分
  *       tier:{id,name,min}, tierUp:bool, tierDown:bool,
  *       reward:null|{ cult, lingShi },       // 每日前5场才有，之后为 null
- *       dailyLeft, streak, rival:bool, upset:bool }  // upset=越阶挑战(对手战力≥1.3倍仍胜)
+ *       dailyLeft, streak, streakBonus,      // streak=赛后连胜数；streakBonus=本场连胜加成积分
+ *       rival:bool, upset:bool }  // upset=越阶挑战(对手战力≥1.3倍仍胜)
  * XG.sys.pvp.getOverview()
  *   → { unlocked, pts, tier:{id,name,min,idx}, nextTier:null|{id,name,min}, progress:0~1,
  *       wins, losses, streak, dailyLeft, dailyMax:5, season:'YYYY-Www',
@@ -88,6 +90,8 @@
   const UPSET_RATIO = 1.3;     // 越阶挑战判定：对手战力 ≥ 1.3 × 玩家
   const UPSET_BONUS = 5;       // 越阶挑战额外积分
   const OUHUANG_FRAG_P = 0.05; // 战胜欧皇额外掉残篇概率
+  const STREAK_PER = 3;        // 连胜加成：连胜中每场胜利额外 +3（2 连胜起生效）
+  const STREAK_CAP = 30;       // 连胜加成封顶 +30
 
   /* ---------------- 内部助手 ---------------- */
   // 读取（并懒初始化/自修复）pvp 状态子树
@@ -324,6 +328,13 @@
     // 隐藏·越阶挑战：对手战力 ≥1.3 倍仍获胜，额外 +5
     const upset = win && r >= UPSET_RATIO;
     if (upset) delta += UPSET_BONUS;
+    // 连胜加成：连胜越多胜场加分越多（2 连胜起 +3/场递增，封顶 +30；败北清零）
+    // p.streak 此处为赛前连胜数：0=本场首胜无加成，1=2 连胜 +3，…，10 及以上封顶 +30
+    let streakBonus = 0;
+    if (win) {
+      streakBonus = Math.min(STREAK_CAP, STREAK_PER * p.streak);
+      delta += streakBonus;
+    }
 
     const tierBefore = tierOf(p.pts);
     p.pts = Math.max(0, p.pts + delta);
@@ -400,7 +411,7 @@
       delta: delta, pts: p.pts,
       tier: { id: tierAfter.id, name: tierAfter.name, min: tierAfter.min },
       tierUp: tierUp, tierDown: tierDown,
-      reward: reward, dailyLeft: dailyLeft(), streak: p.streak,
+      reward: reward, dailyLeft: dailyLeft(), streak: p.streak, streakBonus: streakBonus,
       rival: rival, upset: upset,
     };
   }

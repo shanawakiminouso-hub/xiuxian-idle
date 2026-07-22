@@ -59,7 +59,7 @@
         realm.breakRate + (p.breakFails || 0) * XG.cfg.BREAK_FAIL_BONUS + pct('breakSuccPct') / 100
       );
 
-      // 离线收益上限秒数 = (8 + offlineHours) * 3600
+      // 离线收益上限秒数 = (48 + offlineHours) * 3600
       r.offlineCapSec = (XG.cfg.OFFLINE_CAP_H + (mods.offlineHours || 0)) * 3600;
 
       return r;

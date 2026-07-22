@@ -219,15 +219,21 @@
 
   // ============================ modal / confirm ============================
   let modalBtns = [];
+  let lastModalTitle = null; // 上一次弹窗标题（同题重绘时保持滚动位置）
   function closeModal() {
     const root = $('modal-root');
     if (root) root.innerHTML = '';
     modalBtns = [];
+    lastModalTitle = null;
   }
   function modal(opt) {
     opt = opt || {};
     const root = $('modal-root');
     if (!root) return;
+    // 同标题重绘（装备/灵宠详情操作后刷新弹窗）时保持 .modal 滚动位置，避免跳回顶部
+    const oldBox = root.querySelector('.modal');
+    const keepScroll = !!(oldBox && lastModalTitle != null && lastModalTitle === (opt.title || ''));
+    const oldTop = keepScroll ? oldBox.scrollTop : 0;
     const btns = (opt.buttons && opt.buttons.length) ? opt.buttons : [{ text: '告辞' }];
     modalBtns = btns;
     root.innerHTML =
@@ -239,6 +245,11 @@
         return '<button class="btn ' + esc(b.cls || '') + '" data-mbtn="' + i + '">' + esc(b.text) + '</button>';
       }).join('') +
       '</div></div></div>';
+    lastModalTitle = opt.title || '';
+    if (keepScroll) {
+      const nb = root.querySelector('.modal');
+      if (nb) nb.scrollTop = oldTop;
+    }
   }
   function confirm(text, cb) {
     modal({
@@ -270,6 +281,7 @@
 
   // ============================ pop（屏幕中央浮动跳字） ============================
   function pop(text, cls) {
+    if (pop._muted) return; // 批量操作（一键论道等）期间静音，由调用方聚合跳字
     const root = $('pop-root');
     if (!root) return;
     const el = document.createElement('div');
@@ -411,6 +423,7 @@
       '<div class="topbar-rate" id="xgh-top-rate"></div>' +
       '</div></div>' +
       '<div class="res-bar">' +
+      '<span class="res-item"><span class="res-ico">⚔️</span><span class="res-num" id="xgh-power" style="color:var(--gold-d)">0</span> 战力</span>' +
       '<span class="res-item"><span class="res-ico">🪙</span><span class="res-num" id="xgh-lingshi">0</span> 灵石</span>' +
       '<span class="res-item"><span class="res-ico">💎</span><span class="res-num" id="xgh-lingyu">0</span> 灵玉</span>' +
       '</div></div>';
@@ -434,6 +447,9 @@
     if (fill) fill.style.width = pct.toFixed(1) + '%';
     set('xgh-top-ptext', last ? '已至绝巅' : fmt(cult) + ' / ' + fmt(cost));
     set('xgh-top-rate', '修为 +' + fmt(rate) + '/秒');
+    let power = 0;
+    try { power = (XG.stats && XG.stats.get().power) || 0; } catch (e) { power = 0; }
+    set('xgh-power', fmt(power));
     set('xgh-lingshi', fmtInt((S().res && S().res.lingShi) || 0));
     set('xgh-lingyu', fmtInt((S().res && S().res.lingYu) || 0));
   }
@@ -1404,6 +1420,7 @@
     closeModal: closeModal,
     confirm: confirm,
     pop: pop,
+    popMute: function (m) { pop._muted = !!m; }, // 批量操作期间静音跳字（try/finally 成对调用）
     fx: fx,
     news: news,
   };

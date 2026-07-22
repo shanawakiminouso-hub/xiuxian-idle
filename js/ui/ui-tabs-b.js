@@ -930,7 +930,7 @@
     }
     h += '<div class="tbb-rowline" style="font-size:12px">'
       + '<span class="muted">战绩 ' + (o.wins || 0) + ' 胜 / ' + (o.losses || 0) + ' 负</span>'
-      + (o.streak >= 2 ? '<span style="color:var(--gold-d)">' + o.streak + ' 连胜</span>' : '')
+      + (o.streak >= 2 ? '<span style="color:var(--gold-d)">' + o.streak + ' 连胜（下场胜 +' + Math.min(30, 3 * o.streak) + '）</span>' : '')
       + '<span class="tbb-sp"></span><span class="muted">今日有奖场次 ' + o.dailyLeft + ' / ' + o.dailyMax + '</span></div>';
     // 赛季结算
     h += '<div style="margin-top:8px;border-top:1px dashed var(--line);padding-top:6px">'
@@ -1096,6 +1096,7 @@
         if (res.tierUp) tags.push('段位晋升！');
         if (res.tierDown) tags.push('段位跌落……');
         if (res.upset) tags.push('越阶挑战，额外 +5 分');
+        if (res.streakBonus > 0) tags.push(res.streak + ' 连胜，加成 +' + res.streakBonus + ' 分');
         if (res.reward) tags.push('日赏：' + gainLines(res.reward).join('、'));
         if (tags.length) h += '<div class="card-sub">' + tags.map(esc).join('　') + '</div>';
         el3.innerHTML = h;

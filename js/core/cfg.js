@@ -30,7 +30,7 @@
       return r.baseCost * Math.pow(layer, 2.2);
     },
 
-    OFFLINE_CAP_H: 8,        // 离线收益上限 8 小时
+    OFFLINE_CAP_H: 48,       // 离线收益上限 48 小时
     BREAK_FAIL_BONUS: 0.08,  // 突破失败保底成功率逐次 +8%（成功清零）
     BREAK_PILL_BONUS: 0.15,  // 每颗破境丹 +15%（最多用 3 颗）
     NEWS_CAP: 200,           // 传闻缓存上限
