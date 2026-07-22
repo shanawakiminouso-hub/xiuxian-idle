@@ -83,6 +83,14 @@
     ['ore_xingchenjin', 'ore_longwenjin', 'ore_hundunjin', 'ore_longjin', 'gem_guixuyu', 'gem_longmu',
       'beast_kun_yu', 'beast_longlin', 'beast_longgu', 'beast_longjiao'],
   ];
+  // 扫荡炼丹灵草池（按品阶分档，对应塔层解锁进度）
+  const HERB_TIERS = [
+    ['herb_qingling', 'herb_ningxue', 'herb_ningshen', 'herb_ziye'],
+    ['herb_juling', 'herb_yuehua', 'herb_chiyang', 'herb_bingxin'],
+    ['herb_xuanbing', 'herb_huolingzhi', 'herb_digen', 'herb_jinxian'],
+    ['herb_longxu', 'herb_fengwei', 'herb_yusui', 'herb_youming', 'herb_hunyuancao'],
+    ['herb_tianxing', 'herb_dihuo', 'herb_hansui', 'herb_leiming', 'herb_xueling', 'herb_taiyin', 'herb_taiyang'],
+  ];
 
   /* ==================== 内部小工具 ==================== */
   function U() { return XG.util; }
@@ -625,23 +633,23 @@
     const dk = dayKey();
     if (d.sweepDay !== dk) { d.sweepDay = dk; d.sweepFree = SWEEP_PER_DAY; }
   }
-  // 单层标准收益（扫荡口径：灵石 + 修为 + 灵玉，不含随机掉落）
+  // 单层标准收益（扫荡口径：灵石 + 修为，不含随机掉落）
   function layerStandard(n) {
     return {
       lingShi: Math.floor(100 * Math.pow(n, 1.5) * (1 + rwPct('rwLingShiPct') / 100)),
       cult: Math.floor((XG.stats.get().cultRate || XG.cfg.REALMS[XG.state.player.realmIdx].rate) *
         (60 + 12 * n) * (1 + rwPct('rwCultPct') / 100)),
-      lingYu: Math.floor(n / 10), // 每 10 层 +1 灵玉
     };
   }
   function sweepEst() {
     const d = D();
-    let ls = 0, cult = 0, ly = 0;
+    let ls = 0, cult = 0;
     for (let n = 1; n <= d.towerBest - 1; n++) {
       const s = layerStandard(n);
-      ls += s.lingShi; cult += s.cult; ly += s.lingYu;
+      ls += s.lingShi; cult += s.cult;
     }
-    return { lingShi: Math.floor(ls * SWEEP_RATE), cult: Math.floor(cult * SWEEP_RATE), lingYu: Math.floor(ly * SWEEP_RATE) };
+    const bundles = Math.floor((d.towerBest - 1) / 10);
+    return { lingShi: Math.floor(ls * SWEEP_RATE), cult: Math.floor(cult * SWEEP_RATE), bundles: bundles };
   }
   function sweepInfo() {
     ensureSweepDay();
@@ -670,25 +678,35 @@
       paid = true;
     }
     const est = sweepEst();
-    XG.addRes({ lingShi: est.lingShi, lingYu: est.lingYu });
+    XG.addRes({ lingShi: est.lingShi });
     giveCult(est.cult, '镇妖塔扫荡');
-    // 材料添头：每 10 层赠 1 份随机材料（品阶按最高层解锁）
+    // 扫荡添头：每 10 层赠 1 份锻造材料 + 1 株炼丹灵草 + 1 份功法残篇
     const mat = {};
-    const bundles = Math.floor((d.towerBest - 1) / 10);
+    const bundles = est.bundles;
+    const maxTier = U().clamp(Math.floor((d.towerBest - 1) / 25), 0, MAT_TIERS.length - 1);
     for (let i = 0; i < bundles; i++) {
+      // 锻造材料
       const one = rollTowerMats(d.towerBest - 1);
       for (const id in one) mat[id] = (mat[id] || 0) + 1;
+      // 炼丹灵草
+      const herbTier = U().clamp(Math.floor((d.towerBest - 1) / 25), 0, HERB_TIERS.length - 1);
+      const herbId = U().pick(HERB_TIERS[herbTier]);
+      mat[herbId] = (mat[herbId] || 0) + 1;
+      // 功法残篇（每 10 层 1 份，品阶随层数递增）
+      const fragGrade = U().clamp(1 + Math.floor((d.towerBest - 1) / 30), 1, 9);
+      const gfId = pickGongfaByGrade(fragGrade);
+      if (gfId) giveFrag(gfId, 1);
     }
     if (Object.keys(mat).length) XG.addRes({ mat: mat });
     incStat('sweep_count', 1);
     XG.bus.emit('save:dirty');
     const msg = [
       '扫荡镇妖塔 ' + (d.towerBest - 1) + ' 层（×' + SWEEP_RATE + '）',
-      '灵石 +' + U().fmt(est.lingShi) + '，修为 +' + U().fmt(est.cult) + (est.lingYu > 0 ? '，灵玉 +' + est.lingYu : ''),
+      '灵石 +' + U().fmt(est.lingShi) + '，修为 +' + U().fmt(est.cult),
     ];
-    if (Object.keys(mat).length) msg.push('另获材料 ' + Object.keys(mat).length + ' 种');
+    if (Object.keys(mat).length) msg.push('获材料 ' + Object.keys(mat).length + ' 种、残篇若干');
     if (paid) msg.push('（消耗灵玉 ' + SWEEP_PAY + '）');
-    return { ok: true, msg: msg, gains: { lingShi: est.lingShi, cult: est.cult, lingYu: est.lingYu, mat: mat } };
+    return { ok: true, msg: msg, gains: { lingShi: est.lingShi, cult: est.cult, mat: mat } };
   }
 
   /* ==================== 模块协议（契约 §10） ==================== */
