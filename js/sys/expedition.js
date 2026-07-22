@@ -411,10 +411,12 @@
         if (hongyun) n *= 2;
         report.mat[it.id] = (report.mat[it.id] || 0) + n;
       });
-      // ---- sp 特产：按 min(1,时长/1h) 概率判定，中 1/1/2 件（保底不折扣） ----
+      // ---- sp 特产：按 min(1,时长/1h) 概率判定，中 1/1/2 件（保底不折扣）；特产同时折灵玉 ----
       const rareScale = Math.min(1, opt.sec / 3600);
       if (map.sp && XG.util.chance(rareScale)) {
         report.mat[map.sp] = (report.mat[map.sp] || 0) + opt.sp;
+        const ly = opt.sp; // 每件特产折 1 灵玉
+        report.lingYu = (report.lingYu || 0) + ly;
       }
       // ---- 成品丹：品阶权重抽 1 档，品阶池随机 ----
       if (map.drops.pill) {
@@ -463,6 +465,7 @@
     resDelta.mat = report.mat;
     resDelta.pill = report.pill;
     if (report.egg) resDelta.egg = report.egg;
+    if (report.lingYu) resDelta.lingYu = report.lingYu;
     XG.addRes(resDelta);
 
     // ---- 释放灵宠岗位 ----

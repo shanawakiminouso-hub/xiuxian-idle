@@ -680,7 +680,7 @@
         + '<div class="tbb-rowline"><span>今日免费 <b style="color:var(--gold-d)">' + sw.freeLeft + '</b> / ' + sw.perDay + ' 次</span>'
         + '<span class="muted">其后灵玉 ' + sw.payCost + '/次</span><span class="tbb-sp"></span>'
         + '<button class="btn tbb-mini" data-act="dg-sweep"' + (sw.canSweep ? '' : ' disabled') + '>一键扫荡</button></div>'
-        + '<div class="card-sub" style="margin-top:4px">按历史最高 ' + sw.best + ' 层折算，预估可得：灵石 ' + fmt(sw.est.lingShi) + '、修为 ' + fmt(sw.est.cult) + '</div></div>';
+        + '<div class="card-sub" style="margin-top:4px">按历史最高 ' + sw.best + ' 层折算，预估可得：灵石 ' + fmt(sw.est.lingShi) + '、修为 ' + fmt(sw.est.cult) + (sw.est.lingYu > 0 ? '、灵玉 ' + sw.est.lingYu : '') + '</div></div>';
     }
     z.innerHTML = h;
   }
@@ -858,7 +858,7 @@
             const r = s.quickSweep();
             if (!r || !r.ok) { toast((r && r.err) || '扫荡未成'); return; }
             if (r.msg && r.msg.length) toast(r.msg.join('；'));
-            if (r.gains && r.gains.lingShi) pop('灵石 +' + fmtI(r.gains.lingShi), 'pop-good');
+            if (r.gains && r.gains.lingShi) pop('灵石 +' + fmtI(r.gains.lingShi) + (r.gains.lingYu > 0 ? ' · 灵玉 +' + r.gains.lingYu : ''), 'pop-good');
             renderTower();
           } else if (act === 'dg-hunt-enter') {
             const r = s.enterHunt();

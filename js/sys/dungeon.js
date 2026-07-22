@@ -625,22 +625,23 @@
     const dk = dayKey();
     if (d.sweepDay !== dk) { d.sweepDay = dk; d.sweepFree = SWEEP_PER_DAY; }
   }
-  // 单层标准收益（扫荡口径：灵石 + 修为，不含随机掉落）
+  // 单层标准收益（扫荡口径：灵石 + 修为 + 灵玉，不含随机掉落）
   function layerStandard(n) {
     return {
       lingShi: Math.floor(100 * Math.pow(n, 1.5) * (1 + rwPct('rwLingShiPct') / 100)),
       cult: Math.floor((XG.stats.get().cultRate || XG.cfg.REALMS[XG.state.player.realmIdx].rate) *
         (60 + 12 * n) * (1 + rwPct('rwCultPct') / 100)),
+      lingYu: Math.floor(n / 10), // 每 10 层 +1 灵玉
     };
   }
   function sweepEst() {
     const d = D();
-    let ls = 0, cult = 0;
+    let ls = 0, cult = 0, ly = 0;
     for (let n = 1; n <= d.towerBest - 1; n++) {
       const s = layerStandard(n);
-      ls += s.lingShi; cult += s.cult;
+      ls += s.lingShi; cult += s.cult; ly += s.lingYu;
     }
-    return { lingShi: Math.floor(ls * SWEEP_RATE), cult: Math.floor(cult * SWEEP_RATE) };
+    return { lingShi: Math.floor(ls * SWEEP_RATE), cult: Math.floor(cult * SWEEP_RATE), lingYu: Math.floor(ly * SWEEP_RATE) };
   }
   function sweepInfo() {
     ensureSweepDay();
@@ -669,7 +670,7 @@
       paid = true;
     }
     const est = sweepEst();
-    XG.addRes({ lingShi: est.lingShi });
+    XG.addRes({ lingShi: est.lingShi, lingYu: est.lingYu });
     giveCult(est.cult, '镇妖塔扫荡');
     // 材料添头：每 10 层赠 1 份随机材料（品阶按最高层解锁）
     const mat = {};
@@ -683,11 +684,11 @@
     XG.bus.emit('save:dirty');
     const msg = [
       '扫荡镇妖塔 ' + (d.towerBest - 1) + ' 层（×' + SWEEP_RATE + '）',
-      '灵石 +' + U().fmt(est.lingShi) + '，修为 +' + U().fmt(est.cult),
+      '灵石 +' + U().fmt(est.lingShi) + '，修为 +' + U().fmt(est.cult) + (est.lingYu > 0 ? '，灵玉 +' + est.lingYu : ''),
     ];
     if (Object.keys(mat).length) msg.push('另获材料 ' + Object.keys(mat).length + ' 种');
     if (paid) msg.push('（消耗灵玉 ' + SWEEP_PAY + '）');
-    return { ok: true, msg: msg, gains: { lingShi: est.lingShi, cult: est.cult, mat: mat } };
+    return { ok: true, msg: msg, gains: { lingShi: est.lingShi, cult: est.cult, lingYu: est.lingYu, mat: mat } };
   }
 
   /* ==================== 模块协议（契约 §10） ==================== */
