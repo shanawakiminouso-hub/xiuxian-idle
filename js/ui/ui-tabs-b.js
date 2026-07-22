@@ -647,6 +647,7 @@
     const pow = myPower();
     let h = '<div class="card"><h3 class="card-title">镇妖塔 · 第 ' + info.layer + ' 层'
       + '<span class="muted" style="font-weight:normal">（最高 ' + info.best + ' 层）</span></h3>'
+      + '<div class="muted" style="font-size:11px">挑战失败折损修为 ' + fmtI(info.penalty) + '（不足则不可挑战）</div>'
       + '<div class="tbb-rowline"><span>守层妖邪战力 <b style="color:var(--danger)">' + fmt(info.need) + '</b></span>'
       + '<span>我方战力 <b style="color:var(--qing-d)">' + fmt(pow) + '</b></span>'
       + '<span class="tbb-sp"></span><span>预估胜率 <b style="color:' + (info.winP >= 0.5 ? 'var(--qing-d)' : 'var(--danger)') + '">' + pct(info.winP) + '</b></span></div>'
@@ -662,7 +663,7 @@
       h += '<div class="muted">每 33 层有隐藏 BOSS 现身，掉落远胜寻常。</div>';
     }
     h += '<div class="tbb-rowline" style="margin-top:8px">'
-      + '<button class="btn btn-primary" data-act="dg-tower"' + (dg.chain ? ' disabled' : '') + '>挑战本层</button>'
+      + '<button class="btn btn-primary" data-act="dg-tower"' + (dg.chain || !info.penaltyOk ? ' disabled' : '') + '>' + (info.penaltyOk ? '挑战本层' : '修为不足') + '</button>'
       + '<button class="btn' + (dg.chain ? ' btn-danger' : '') + '" data-act="dg-chain">' + (dg.chain ? '鸣金收兵（已连胜 ' + dg.chain.wins + '）' : '快速连挑') + '</button>'
       + '</div>'
       + '<div id="tbb-dg-tres" style="margin-top:6px">'
@@ -838,7 +839,7 @@
             if (!r || !r.ok) { toast((r && r.err) || '挑战失败'); return; }
             dg.lastRes = r;
             if (r.win) pop('镇妖塔第 ' + r.layer + ' 层 · 破', 'pop-good');
-            else toast('惜败于第 ' + r.layer + ' 层，妖邪凶悍，且再砺剑。', 'err');
+            else toast('惜败于第 ' + r.layer + ' 层' + (r.penalty > 0 ? '，折损修为 ' + fmtI(r.penalty) : '') + '，且再砺剑。', 'err');
             renderTower();
           } else if (act === 'dg-chain') {
             if (dg.chain) { stopChain('鸣金收兵，连胜 ' + dg.chain.wins + ' 场'); return; }

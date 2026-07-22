@@ -545,6 +545,10 @@
       if (!best0) return { ok: false, msg: ['尚无已解锁的历练地图。'] };
       const r0 = dispatch(best0.id, [], 1);
       msg.push(r0.msg);
+      if (r0.ok) {
+        setAuto({ mapId: best0.id, petUids: [], durIdx: 1 });
+        msg.push('连续历练已自动开启。');
+      }
       return { ok: r0.ok, msg: msg };
     }
     const team = idle.slice(0, 3);
@@ -560,7 +564,11 @@
     if (!best) return { ok: false, msg: ['尚无已解锁的历练地图。'] };
     const r = dispatch(best.id, team.map(function (p) { return p.uid; }), 1);
     msg.push(r.msg);
-    if (r.ok && powerFactor(best, tp) < 1) msg.push('队伍战力未足「' + best.name + '」所需，归来收益将打折扣。');
+    if (r.ok) {
+      setAuto({ mapId: best.id, petUids: team.map(function (p) { return p.uid; }), durIdx: 1 });
+      msg.push('连续历练已自动开启。');
+      if (powerFactor(best, tp) < 1) msg.push('队伍战力未足「' + best.name + '」所需，归来收益将打折扣。');
+    }
     return { ok: r.ok, msg: msg };
   }
 
