@@ -46,7 +46,7 @@
  *  bloodInfo(id)     → data 血脉行 | null
  *  tierOf(apt)       → {id,name,min,max,mult} 资质档
  *  jobDefs()         → { lt:{id,name,icon,desc}, sl:{...}, explore:{...} } 打工定义
- *  jobCap()          → 打工位上限（3 + 洞府兽栏等级/2）
+ *  jobCap()          → 打工位上限（8）
  *  jobList()         → [{ uid, pet:PetView, job, jobName, icon }]
  *  ratesFor(uid)     → { herbPerH, expPerH, lingShiPerH } 该宠三种打工的小时产出（已含全部倍率）
  *  pending()         → { lingShi, mat:{matId:n} } 待领池原值（lingShi 为浮点，显示请 fmtInt）
@@ -115,10 +115,10 @@
   const LV_GROWTH = 0.08;             // 每级属性成长（线性）：lvMul = 1+0.08*(lv-1)
   const SHINY_P = 0.01;               // 闪光概率
   const BREED_COST = 1e5;             // 繁殖灵石消耗
-  const BREED_CD_MS = 14400000;       // 繁殖双亲冷却 4h
-  const BREED_CD_H = 4;
+  const BREED_CD_MS = 1800000;        // 繁殖双亲冷却 30min（原 4h）
+  const BREED_CD_H = 0.5;
   const BREED_MUT_P = 0.02;           // 异变饕餮概率
-  const BREED_LV = 30;                // 繁殖等级门槛
+  const BREED_LV = 20;                // 繁殖等级门槛（原 30）
   const AWAKEN_COST = { lingShi: 5e4, mat: { beast_dan: 5, beast_jingxue: 1 } }; // 觉醒消耗
   const AWAKEN_PURITY = 60;           // 觉醒纯度门槛（与 data awaken.purityNeed 一致）
   const GRADE_MIN_REALM = { 1: 0, 2: 1, 3: 2, 4: 4 }; // 蛋池品阶→最低大境界（g2筑基/g3金丹/g4化神；g5 不入池）
@@ -629,7 +629,7 @@
     bloodInfo(id) { return bloodMap()[id] || null; },
     tierOf: tierOf,
     jobDefs() { return JOBS; },
-    jobCap() { return 3 + Math.floor(caveLv('sl') / 2); },
+    jobCap() { return 8; }, // 打工位上限（原 3 + 洞府兽栏等级/2）
     jobList() {
       const st = P(), self = this, out = [];
       for (const uid in st.jobs) {
@@ -913,7 +913,7 @@
       if (st.team.indexOf(uid) >= 0) return { ok: false, msg: '出战中的灵宠无暇打工，请先撤下战阵' };
       if (st.jobs[uid] === jobId) return { ok: false, msg: '已在' + JOBS[jobId].name + '中' };
       if (!st.jobs[uid] && Object.keys(st.jobs).length >= this.jobCap()) {
-        return { ok: false, msg: '工位已满（' + this.jobCap() + '），升级洞府兽栏可扩位' };
+        return { ok: false, msg: '工位已满（' + this.jobCap() + '）' };
       }
       st.jobs[uid] = jobId;
       emitChanged();
