@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <!-- 移动优先 viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>放置修仙</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* 启动占位样式（防白屏闪烁），主样式在 css/style.css */
+    html, body { margin: 0; padding: 0; background: #f2ecdd; }
+    #boot-loading {
+      padding: 48px 16px; text-align: center; color: #2b2b2b;
+      font-family: "Kaiti SC", "STKaiti", "KaiTi", "Noto Serif SC", serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- 顶部状态栏容器（头像/境界/修为进度/灵石/灵玉，由 ui-core 填充） -->
+    <header id="topbar"></header>
+    <!-- 传闻滚动条容器（可折叠） -->
+    <div id="news-ticker"></div>
+    <!-- 中部 tab 容器 -->
+    <main id="tab-container">
+      <div id="boot-loading">正在踏入修仙世界……</div>
+    </main>
+    <!-- 底部主导航容器（修炼/功法/洞府/历练/更多） -->
+    <nav id="bottom-nav"></nav>
+  </div>
+
+  <!-- 弹窗 / 特效 / 轻提示 / 浮动跳字 挂载容器 -->
+  <div id="modal-root"></div>
+  <div id="fx-root"></div>
+  <div id="toast-root"></div>
+  <div id="pop-root"></div>
+
+  <!-- 核心层（顺序固定，契约 §0） -->
+  <script src="js/core/util.js"></script>
+  <script src="js/core/bus.js"></script>
+  <script src="js/core/cfg.js"></script>
+  <script src="js/core/state.js"></script>
+  <script src="js/core/save.js"></script>
+  <script src="js/core/stats.js"></script>
+  <script src="js/core/offline.js"></script>
+
+  <!-- 数据层（任意顺序，内部只做数据登记） -->
+  <script src="js/data/names.js"></script>
+  <script src="js/data/gongfa.js"></script>
+  <script src="js/data/pills.js"></script>
+  <script src="js/data/pets.js"></script>
+  <script src="js/data/equips.js"></script>
+  <script src="js/data/world.js"></script>
+  <script src="js/data/events_a.js"></script>
+  <script src="js/data/events_b.js"></script>
+  <script src="js/data/achievements.js"></script>
+  <script src="js/data/fellows.js"></script>
+
+  <!-- 系统层（只做注册，glue.js 跨系统胶水排最后） -->
+  <script src="js/sys/cultivation.js"></script>
+  <script src="js/sys/gongfa.js"></script>
+  <script src="js/sys/alchemy.js"></script>
+  <script src="js/sys/forge.js"></script>
+  <script src="js/sys/pets.js"></script>
+  <script src="js/sys/cave.js"></script>
+  <script src="js/sys/expedition.js"></script>
+  <script src="js/sys/dungeon.js"></script>
+  <script src="js/sys/pvp.js"></script>
+  <script src="js/sys/adventure.js"></script>
+  <script src="js/sys/fellows.js"></script>
+  <script src="js/sys/reincarn.js"></script>
+  <script src="js/sys/collection.js"></script>
+  <script src="js/sys/guide.js"></script>
+  <script src="js/sys/glue.js"></script>
+
+  <!-- UI 层（ui-core → ui-tabs-*） -->
+  <script src="js/ui/ui-core.js"></script>
+  <script src="js/ui/scene.js"></script>
+  <script src="js/ui/ui-tabs-a.js"></script>
+  <script src="js/ui/ui-tabs-b.js"></script>
+  <script src="js/ui/ui-tabs-c.js"></script>
+
+  <!-- 启动入口（最后加载） -->
+  <script src="js/main.js"></script>
+</body>
+</html>

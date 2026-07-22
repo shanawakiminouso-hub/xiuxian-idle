@@ -1,0 +1,7 @@
+# 浏览器自动化会话产物，非源码
+.playwright-mcp/
+
+# 系统/编辑器杂项
+.DS_Store
+Thumbs.db
+*.log
