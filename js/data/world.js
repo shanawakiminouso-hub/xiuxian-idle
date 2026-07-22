@@ -90,10 +90,10 @@
    *   mat：{ 材料id: [数量下限, 数量上限, 权重] }；
    *   pill / frag：{ 'g1'~'g9': [数量下限, 数量上限, 权重] } —— 按品阶掉「随机成品丹 / 随机功法残篇」，
    *     品阶池分别见 pills.js / gongfa.js，故本文件不直接引用其 id，避免跨批次悬空引用。
-   *   结算规则（注释）：按权重抽取 3/4/5 种（时长档 15分/1时/4时），每种数量在上下限间取整，
-   *     再乘时长系数 ×1 / ×3.2 / ×6；sp 特产：短途档 40% 得 1 件、中途档必得 1 件、远游档必得 2 件；
+   *   结算规则（注释）：按权重抽取 3/4/5 种（时长档 1分/3分/10分钟），每种数量在上下限间取整，
+   *     再乘时长系数 ×1 / ×3.2 / ×6；sp 特产按 min(1, 时长/1h) 概率判定，得 1/1/2 件；
    *     eggChance / recipeChance 为每次派遣独立判定的概率（灵宠蛋 / 随机丹方），
-   *     结算时按 min(1, 时长/1h) 缩放（短途 ×0.25），时产口径与旧 1h 档一致。
+   *     结算时按 min(1, 时长/1h) 缩放，时产口径与旧 1h 档一致。
    *   power 为建议战力：参照 cfg.REALM_BASE 战力基值（金丹≈5.5e3，每大境界×6）×约 1.5 设定。
    * events：各地图专属事件 id 为「预留位」（evb_<mapId>_01~03，每图 3 条），
    *   由 events_b 批次按 id + mapId 落地实现；未实现前 expedition 可安全跳过。
@@ -101,7 +101,7 @@
   const maps = [
     {
       id: 'qingyun', name: '青云山', icon: '⛰️', hidden: false,
-      unlock: { realmIdx: 1, layer: 1 }, power: 1e3, dur: [900, 3600, 14400],
+      unlock: { realmIdx: 1, layer: 1 }, power: 1e3, dur: [60, 180, 600],
       drops: {
         mat: {
           herb_lingzhi: [1, 3, 10], herb_fuling: [1, 2, 9],
@@ -118,7 +118,7 @@
     },
     {
       id: 'luoxia', name: '落霞谷', icon: '🌄', hidden: false,
-      unlock: { realmIdx: 1, layer: 6 }, power: 3e3, dur: [900, 3600, 14400],
+      unlock: { realmIdx: 1, layer: 6 }, power: 3e3, dur: [60, 180, 600],
       drops: {
         mat: {
           herb_fuling: [1, 3, 9], herb_huangjing: [1, 2, 8],
@@ -135,7 +135,7 @@
     },
     {
       id: 'cangwu', name: '苍梧之野', icon: '🌳', hidden: false,
-      unlock: { realmIdx: 2, layer: 1 }, power: 8e3, dur: [900, 3600, 14400],
+      unlock: { realmIdx: 2, layer: 1 }, power: 8e3, dur: [60, 180, 600],
       drops: {
         mat: {
           herb_huangjing: [1, 3, 9], herb_renshen: [1, 2, 8],
@@ -152,7 +152,7 @@
     },
     {
       id: 'wanyao', name: '万妖岭', icon: '🐍', hidden: false,
-      unlock: { realmIdx: 3, layer: 1 }, power: 5e4, dur: [900, 3600, 14400],
+      unlock: { realmIdx: 3, layer: 1 }, power: 5e4, dur: [60, 180, 600],
       drops: {
         mat: {
           herb_renshen: [1, 3, 8], herb_heshouwu: [1, 2, 8],
@@ -170,7 +170,7 @@
     },
     {
       id: 'beihai', name: '北海冰原', icon: '🧊', hidden: false,
-      unlock: { realmIdx: 4, layer: 1 }, power: 3e5, dur: [900, 3600, 14400],
+      unlock: { realmIdx: 4, layer: 1 }, power: 3e5, dur: [60, 180, 600],
       drops: {
         mat: {
           herb_xuelian: [1, 2, 9], herb_heshouwu: [1, 2, 6],
@@ -188,7 +188,7 @@
     },
     {
       id: 'fentian', name: '焚天谷', icon: '🔥', hidden: false,
-      unlock: { realmIdx: 5, layer: 1 }, power: 1.8e6, dur: [900, 3600, 14400],
+      unlock: { realmIdx: 5, layer: 1 }, power: 1.8e6, dur: [60, 180, 600],
       drops: {
         mat: {
           herb_chiyancao: [1, 2, 8], herb_longxiancao: [1, 1, 5],
@@ -206,7 +206,7 @@
     },
     {
       id: 'youming', name: '幽冥涧', icon: '🌑', hidden: false,
-      unlock: { realmIdx: 6, layer: 1 }, power: 1.1e7, dur: [900, 3600, 14400],
+      unlock: { realmIdx: 6, layer: 1 }, power: 1.1e7, dur: [60, 180, 600],
       drops: {
         mat: {
           herb_hunyuancao: [1, 2, 7], herb_longxiancao: [1, 2, 5],
@@ -225,7 +225,7 @@
     /* ---- 隐藏地图（hiddenMaps 系统提示：炼虚1层；实际进入须满足 cond，由 expedition 判定） ---- */
     {
       id: 'guixu', name: '归墟', icon: '🌊', hidden: true,
-      unlock: { realmIdx: 7, layer: 1 }, power: 6.5e7, dur: [900, 3600, 14400],
+      unlock: { realmIdx: 7, layer: 1 }, power: 6.5e7, dur: [60, 180, 600],
       cond: 'youming_exp_30',
       condText: '于幽冥涧派遣累计满三十次，且臻大乘之境；夜半潮落时，归墟路口自现。',
       drops: {
@@ -245,7 +245,7 @@
     },
     {
       id: 'longyuan', name: '龙渊', icon: '🐉', hidden: true,
-      unlock: { realmIdx: 8, layer: 1 }, power: 4e8, dur: [900, 3600, 14400],
+      unlock: { realmIdx: 8, layer: 1 }, power: 4e8, dur: [60, 180, 600],
       cond: 'guixu_bi_5',
       condText: '集「归墟残璧」五枚，于归墟深处祭坛献祭，渡劫之境方启龙渊之门。',
       drops: {

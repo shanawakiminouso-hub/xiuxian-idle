@@ -2,20 +2,20 @@
  *
  * ============================ 玩法说明 ============================
  * - 系统解锁：cfg.UNLOCKS.expedition（筑基1层）；单图另按 world.js maps[].unlock 境界解锁。
- * - 派遣：选地图 + 1~3 只灵宠 + 时长档（15分/1时/4时）。同时最多 3 队：
+ * - 派遣：选地图 + 1~3 只灵宠 + 时长档（1分/3分/10分钟）。同时最多 3 队：
  *   第 2 队栏位=金丹1层 或 灵玉200，第 3 队栏位=化神1层 或 灵玉500。
  * - 结算规则（对齐 world.js drops 口径注释）：材料按权重抽 3/4/5 种（时长档），
- *   每种 [min,max] 取整 × 时长系数 ×1/×3.2/×6；sp 特产：短途档 40% 得 1 件，
- *   中途档必得 1 件，远游档必得 2 件（保底不打折）；
+ *   每种 [min,max] 取整 × 时长系数 ×1/×3.2/×6；sp 特产按 min(1, 时长/1h) 概率判定，
+ *   得 1/1/2 件（保底不打折）；
  *   pill/frag 按品阶权重抽 1 档，品阶池分别随机取 pills.js 成品丹 / gongfa.js 功法残篇；
- *   eggChance / recipeChance 每次派遣独立判定，并按 min(1, 时长/1h) 缩放（短途 ×0.25，
- *   保持与旧 1h 档相同的时产口径）（丹方→alchemy.learnRandomRecipe，残篇→gongfa.addFrag）。
+ *   eggChance / recipeChance 每次派遣独立判定，并按 min(1, 时长/1h) 缩放
+ *   （保持与旧 1h 档相同的时产口径）（丹方→alchemy.learnRandomRecipe，残篇→gongfa.addFrag）。
  * - 战力校验：队伍战力 < map.power 时收益打折，factor = 0.5 + 0.5×(队伍/需求)，夹在 [0.5,1]。
  * - 每次结算必触发 1 次该地图事件：调 adventure.triggerOnMap(mapId)（防御性，可不存在/可抛错）。
  * - 随机性：6% 「鸿运当头」材料翻倍；擅长「财(cai)」的灵宠每只 +10% 材料产出。
  * - 隐藏图：归墟 cond youming_exp_30（幽冥涧派遣满30次 + 大乘1层，自动解锁+news）；
  *   龙渊 cond guixu_bi_5（渡劫1层 + 消耗 sp_guixu_bi×5 献祭，自动解锁+news）。
- * - quickDispatch：自动为空余栏位挑空闲最强 ≤3 宠，选「地图阶位×战力系数」最高的已解锁图派中途档（1时）。
+ * - quickDispatch：自动为空余栏位挑空闲最强 ≤3 宠，选「地图阶位×战力系数」最高的已解锁图派中途档（3分钟）。
  * - offline：启动时结算所有已到期队伍（未到期按剩余时间跳过，不补扣不加速）。
  *
  * ============================ stats 写入键（XG.state.stats，snake_case） ============================
@@ -36,7 +36,7 @@
  *
  * ============================ UI 对接面（全部查询/操作函数） ============================
  *   isUnlocked() → bool                              系统是否已解锁（筑基1层）
- *   DUR_OPTS → [{sec,label,kinds,mul,sp,spP}]           时长档定义（0=15分/1=1时/2=4时）
+ *   DUR_OPTS → [{sec,label,kinds,mul,sp}]            时长档定义（0=1分/1=3分/2=10分）
  *   getMaps() → [{id,name,icon,desc,hidden,power,sp,dur,unlock,condText,
  *                 unlocked:bool, lockedReason:string|null, dispatchCount:n}]
  *   getMap(mapId) → world.js 地图原始对象 | null
@@ -64,11 +64,11 @@
 
   /* ---------------- 常量 ---------------- */
   // 时长档（对齐 world.js drops 口径注释：抽 3/4/5 种材料，系数 ×1/×3.2/×6；
-  // sp 特产：短途 40%×1 件 / 中途必 1 件 / 远游必 2 件，spP 为概率、sp 为件数）
+  // sp 特产与蛋/丹方概率均按 min(1, 时长/1h) 缩放，sp 为中 1/1/2 件）
   const DUR_OPTS = [
-    { sec: 900, label: '短途·一刻', kinds: 3, mul: 1, sp: 1, spP: 0.4 },
-    { sec: 3600, label: '中途·一时', kinds: 4, mul: 3.2, sp: 1, spP: 1 },
-    { sec: 14400, label: '远游·四时', kinds: 5, mul: 6, sp: 2, spP: 1 },
+    { sec: 60, label: '短途·一分', kinds: 3, mul: 1, sp: 1 },
+    { sec: 180, label: '中途·三分', kinds: 4, mul: 3.2, sp: 1 },
+    { sec: 600, label: '远游·十分', kinds: 5, mul: 6, sp: 2 },
   ];
   // 第 2/3 队栏位解锁规则（idx 即队伍序号 1/2；第 1 队默认开放）
   const SLOT_RULES = {
@@ -398,8 +398,9 @@
         if (hongyun) n *= 2;
         report.mat[it.id] = (report.mat[it.id] || 0) + n;
       });
-      // ---- sp 特产：按档判定（短途 40%×1 / 中途必 1 / 远游必 2，保底不折扣） ----
-      if (map.sp && XG.util.chance(opt.spP == null ? 1 : opt.spP)) {
+      // ---- sp 特产：按 min(1,时长/1h) 概率判定，中 1/1/2 件（保底不折扣） ----
+      const rareScale = Math.min(1, opt.sec / 3600);
+      if (map.sp && XG.util.chance(rareScale)) {
         report.mat[map.sp] = (report.mat[map.sp] || 0) + opt.sp;
       }
       // ---- 成品丹：品阶权重抽 1 档，品阶池随机 ----
@@ -437,7 +438,6 @@
         }
       }
       // ---- 灵宠蛋 / 丹方：独立概率判定（受战力系数影响；按 min(1,时长/1h) 缩放，保持时产口径） ----
-      const rareScale = Math.min(1, opt.sec / 3600);
       if (XG.util.chance((map.drops.eggChance || 0) * factor * rareScale)) report.egg = 1;
       if (XG.util.chance((map.drops.recipeChance || 0) * factor * rareScale)) {
         let maxG = 1;
@@ -514,7 +514,7 @@
     return { ok: true, msg: uids.length ? '灵宠已往「' + map.name + '」历练（' + DUR_OPTS[durIdx].label + '）。' : '你独自往「' + map.name + '」历练（' + DUR_OPTS[durIdx].label + '）——无宠相助，收益以自身战力半数折算。', team: team };
   }
 
-  // 一键派遣：空余栏位 × 空闲最强 ≤3 宠 × 期望收益最高图 × 中途档（1时）
+  // 一键派遣：空余栏位 × 空闲最强 ≤3 宠 × 期望收益最高图 × 中途档（3分钟）
   function quickDispatch() {
     const msg = [];
     if (!XG.cfg.isUnlocked('expedition')) return { ok: false, msg: ['历练之道尚未开启（需筑基1层）。'] };

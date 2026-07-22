@@ -245,7 +245,7 @@ XG.offline.settle()            // 启动时调用：dt=min(now-lastSeen, cap)；
 - 强化/升星成本公式写在 `XG.data.equips.formula = {enhanceCost(lv), starCost(star), maxStar:10, maxEnh:…}`（函数）。
 
 ### 9.6 `data/world.js` —— `XG.data.world = { maps:[≥8], dungeons:{…}, marketRules:{…} }`
-- `maps`：`{id, name, icon, unlock:{realmIdx,layer}, hidden:bool(≥2), power:建议战力, dur:派遣时长档[15分,1时,4时], drops:{mat:{id:[min,max],w}, pill?, frag?, eggChance, recipeChance}, sp:'sp_* 特产id', events:['地图专属事件id…≥3'], desc}`；≥8 张（现 9 张：7 普通+2 隐藏：归墟/龙渊，隐藏图进入条件写在 `cond`，由 expedition 判定）。
+- `maps`：`{id, name, icon, unlock:{realmIdx,layer}, hidden:bool(≥2), power:建议战力, dur:派遣时长档[1分,3分,10分], drops:{mat:{id:[min,max],w}, pill?, frag?, eggChance, recipeChance}, sp:'sp_* 特产id', events:['地图专属事件id…≥3'], desc}`；≥8 张（现 9 张：7 普通+2 隐藏：归墟/龙渊，隐藏图进入条件写在 `cond`，由 expedition 判定）。
 - `dungeons`：`{ tower:{affixPool:[≥12 词缀 {id,name,eff,desc}], hiddenBossEvery:33, rewards(layer)→公式注释}, guard:{waves:[…≥10 档]}, hunt:{dur:300, pools:[…]} }`。
 - `marketRules`：坊市 `{refreshSec:7200, slots:6, priceByPersona:{…奸商×1.3/挚友×0.8…}, stock:{…生成规则注释}}`。
 
