@@ -122,8 +122,8 @@
   const AWAKEN_COST = { lingShi: 5e4, mat: { beast_dan: 5, beast_jingxue: 1 } }; // 觉醒消耗
   const AWAKEN_PURITY = 60;           // 觉醒纯度门槛（与 data awaken.purityNeed 一致）
   const GRADE_MIN_REALM = { 1: 0, 2: 1, 3: 2, 4: 4 }; // 蛋池品阶→最低大境界（g2筑基/g3金丹/g4化神；g5 不入池）
-  const TEAM_EXP_PS = function (g) { return 20 + 10 * g; };   // 出战经验/秒
-  const SL_EXP_PS = function (g) { return 40 + 20 * g; };     // 兽栏经验/秒（基础值，再乘打工倍率）
+  const TEAM_EXP_PS = function (g) { return (20 + 10 * g) * (1 + ((XG.state.player || {}).realmIdx || 0)); };   // 出战经验/秒（随境界增长）
+  const SL_EXP_PS = function (g) { return (40 + 20 * g) * (1 + ((XG.state.player || {}).realmIdx || 0)); };     // 兽栏经验/秒（随境界增长）
   const HERB_PER_H = 30;              // 灵田灵草期望株数/小时（基础值）
   const EXPLORE_LS_PS = 0.6;          // 探索灵石/秒 = 境界 rate × 0.6 × 品阶
   const CAI_DROP_PCT = 3;             // cai 擅长出战每只 dropPct 加成
