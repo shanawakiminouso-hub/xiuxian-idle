@@ -2,10 +2,10 @@
  *
  * 玩法：对手池=state.fellows（道友）；匹配=玩家战力±40% 筛选 + 强度贴近/宿敌偏好，无匹配时全表随机；
  *      战斗自动结算：双方战力 × 流派克制（剑→符→阵→丹→体→剑，克制方 +15%）× 随机 0.9~1.1，三局两胜；
- *      赛季=weekId，段位 pts 阈值：青铜0/白银1200/黄金1500/白金1800/钻石2100/仙尊2500；
+ *      周期=10 分钟一轮，段位 pts 阈值：青铜0/白银1200/黄金1500/白金1800/钻石2100/仙尊2500；
  *      胜 +30 / 负 -15（按对手强度浮动）；连胜加成：2 连胜起每场胜利 +3 递增、封顶 +30（败北清零）；
  *      每日前 5 场发灵石+修为，之后仅 pts；战报 history ≤20；
- *      跨周赛季结算：按当前段位发灵玉+随机残篇，进入可补领列表（上周没打也发基础奖，不惩罚缺席）；
+ *      每 10 分钟按当前段位自动结算，发灵玉+随机残篇，进入可补领列表（不打也发基础奖，不惩罚缺席）；
  *      宿敌联动：对手 relation==='rival' 时防御性调 XG.sys.fellows.onRivalBattle(win, uid)，
  *      fellows 系统未就位时自行用 lines.war 文案池发战书 news 兜底。
  *
@@ -50,8 +50,8 @@
  *   news      { t, cat, text, imp }  // 段位升降/连胜/赛季结算/宿敌战书等（经内部 pushNews）
  *
  * ==================== offline 行为 ====================
- *   offline(dt)：补做跨周赛季结算（与 tick/init 同一入口 checkSeason），
- *   若产生了新的待补领赛季奖励，返回 { events:['论剑上赛季结算…'] } 并入离线报告；否则返回 null。
+ *   offline(dt)：补做周期结算（与 tick/init 同一入口 checkSeason），
+ *   若产生了新的待补领奖励，返回 { events:['论剑周期结算…'] } 并入离线报告；否则返回 null。
  *
  * ==================== 埋的隐藏内容 ====================
  *   · 越阶挑战：对手战力 ≥1.3 倍仍获胜 → 额外 +5 pts 并播报 imp1 传闻；
@@ -66,14 +66,14 @@
   XG.sysOrder = XG.sysOrder || [];
 
   /* ---------------- 常量 ---------------- */
-  // 段位表（min=达到积分；yu=赛季结算灵玉；frags=赛季结算残篇数）
+  // 段位表（min=达到积分；yu=10分钟周期结算灵玉；frags=10分钟周期结算残篇数）
   const TIERS = [
-    { id: 'qingtong', name: '青铜', min: 0,    yu: 30,  frags: 2 },
-    { id: 'baiyin',   name: '白银', min: 1200, yu: 60,  frags: 3 },
-    { id: 'huangjin', name: '黄金', min: 1500, yu: 120, frags: 4 },
-    { id: 'bojin',    name: '白金', min: 1800, yu: 200, frags: 5 },
-    { id: 'zuanshi',  name: '钻石', min: 2100, yu: 350, frags: 6 },
-    { id: 'xianzun',  name: '仙尊', min: 2500, yu: 600, frags: 8 },
+    { id: 'qingtong', name: '青铜', min: 0,    yu: 0,  frags: 0 },
+    { id: 'baiyin',   name: '白银', min: 1200, yu: 1,  frags: 0 },
+    { id: 'huangjin', name: '黄金', min: 1500, yu: 1,  frags: 1 },
+    { id: 'bojin',    name: '白金', min: 1800, yu: 2,  frags: 1 },
+    { id: 'zuanshi',  name: '钻石', min: 2100, yu: 3,  frags: 1 },
+    { id: 'xianzun',  name: '仙尊', min: 2500, yu: 5,  frags: 2 },
   ];
   // 流派克制环：key 克制 value（剑→符→阵→丹→体→剑），克制方战力 +15%
   const COUNTER = { jian: 'fu', fu: 'zhen', zhen: 'dan', dan: 'ti', ti: 'jian' };
@@ -213,15 +213,18 @@
     return hit ? hit.id : null;
   }
 
-  /* ---------------- 赛季（weekId） ---------------- */
-  // 跨周检测与结算：赛季变更时按当前段位生成待补领奖励（上周没打也发，不惩罚缺席）
+  /* ---------------- 10 分钟周期结算 ---------------- */
+  // 周期 id，每 10 分钟一换（取代原来的周赛）
+  function cycleId() { return 'C' + Math.floor(Date.now() / 600000); }
+
+  // 跨周期检测与结算：周期变更时按当前段位生成待补领奖励（不打也发基础奖，不惩罚缺席）
   function checkSeason() {
     const p = st();
-    const wk = XG.util.weekId();
-    if (p.season === wk) return null;
+    const cid = cycleId();
+    if (p.season === cid) return null;
     const old = p.season;
-    p.season = wk;
-    if (!old) return null; // 新档首记赛季，无上赛季可结算
+    p.season = cid;
+    if (!old) return null; // 新档首记，无上周期可结算
 
     const tier = tierOf(p.pts);
     const tDef = TIERS[tier.idx];
@@ -236,7 +239,7 @@
     };
     p.pending.unshift(reward);
     if (p.pending.length > PENDING_CAP) p.pending.length = PENDING_CAP; // 超上限丢弃最旧（防囤）
-    pushNews('system', '论剑上赛季（' + old + '）结算已出：' + tDef.name +
+    pushNews('system', '论剑结算：' + tDef.name +
       '段位奖励灵玉×' + tDef.yu + '、功法残篇×' + tDef.frags + '，记得前往论剑台补领。', 1);
     if (XG.bus) XG.bus.emit('save:dirty');
     return reward;
@@ -501,7 +504,7 @@
       const before = st().pending.length;
       const r = checkSeason();
       if (r && st().pending.length > before) {
-        return { events: ['论剑上赛季（' + r.season + '）结算：' + r.tierName + '段位奖励待补领（灵玉×' + r.lingYu + '）'] };
+        return { events: ['论剑周期结算：' + r.tierName + '段位奖励待补领（灵玉×' + r.lingYu + '）'] };
       }
       return null;
     },

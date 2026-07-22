@@ -942,8 +942,7 @@
     let h = '<div class="tbb-rowline"><span class="tbb-tier">' + (TIER_ICONS[o.tier.id] || '🏅') + '</span>'
       + '<div><b style="font-size:16px">' + esc(o.tier.name) + '</b>'
       + '<div class="muted">积分 <b style="color:var(--gold-d)">' + fmtI(o.pts) + '</b></div></div>'
-      + '<span class="tbb-sp"></span><div style="text-align:right"><div class="muted">赛季 ' + esc(o.season || '') + '</div>'
-      + '<div class="muted">余 ' + weekLeftDays() + ' 天结算</div></div></div>';
+      + '<span class="tbb-sp"></span><div style="text-align:right"><div class="muted">每 10 分钟结算</div></div></div>';
     if (o.nextTier) {
       h += '<div class="progress" style="margin:6px 0"><div class="progress-fill" style="width:' + ((o.progress || 0) * 100).toFixed(1) + '%"></div>'
         + '<div class="progress-text">距「' + esc(o.nextTier.name) + '」还需 ' + fmtI(Math.max(0, o.nextTier.min - o.pts)) + ' 分</div></div>';
@@ -954,12 +953,12 @@
       + '<span class="muted">战绩 ' + (o.wins || 0) + ' 胜 / ' + (o.losses || 0) + ' 负</span>'
       + (o.streak >= 2 ? '<span style="color:var(--gold-d)">' + o.streak + ' 连胜（下场胜 +' + Math.min(30, 3 * o.streak) + '）</span>' : '')
       + '<span class="tbb-sp"></span><span class="muted">今日有奖场次 ' + o.dailyLeft + ' / ' + o.dailyMax + '</span></div>';
-    // 赛季结算
+    // 周期结算
     h += '<div style="margin-top:8px;border-top:1px dashed var(--line);padding-top:6px">'
-      + '<div class="tbb-rowline"><b style="font-size:13px">赛季结算奖励</b><span class="tbb-sp"></span>'
+      + '<div class="tbb-rowline"><b style="font-size:13px">周期结算奖励</b><span class="tbb-sp"></span>'
       + '<button class="btn tbb-mini" data-act="pvp-claim"' + ((o.pending || []).length ? '' : ' disabled') + '>一键补领</button></div>';
     if (!(o.pending || []).length) {
-      h += '<div class="muted">暂无待领赛季奖励。</div>';
+      h += '<div class="muted">暂无待领周期奖励。</div>';
     } else {
       o.pending.forEach((p) => {
         h += '<div class="tbb-log-item">' + esc(p.season) + ' · ' + esc(p.tierName)
@@ -1168,7 +1167,7 @@
           } else if (act === 'pvp-claim') {
             const r = s.claimSeason();
             if (!r || !r.ok) { toast((r && r.reason) || '无可补领'); return; }
-            toast('补领 ' + r.count + ' 期赛季赏：灵玉 ' + r.lingYu + '、残篇若干');
+            toast('补领 ' + r.count + ' 期周期赏：灵玉 ' + r.lingYu + '、残篇若干');
             pop('灵玉 +' + r.lingYu, 'pop-good');
             renderPvpAll();
           }
