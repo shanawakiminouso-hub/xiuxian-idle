@@ -112,7 +112,9 @@
   const MAX_LV = 100;                 // 等级上限
   const CONVERT = 0.5;                // 宠物属性折算玩家 flat 的比例（原 0.2）
   const EXP_NEED_BASE = 80;           // 升级经验基数：need(lv)=80*lv^1.5*(1+0.25*(grade-1))
-  const LV_GROWTH = 0.08;             // 每级属性成长（线性）：lvMul = 1+0.08*(lv-1)
+  const LV_GROWTH = 0.08;             // 每级属性成长基数：lvMul = 1 + LV_GROWTH*(lv-1)；品阶越低成长越高 (gradeLvGrowth)
+  // 品阶成长倍率：低品阶升级获益更大，满级缩小差距
+  function lvGrowth(grade) { return LV_GROWTH + (5 - grade) * 0.04; } // g1=0.24 g2=0.20 g3=0.16 g4=0.12 g5=0.08
   const SHINY_P = 0.01;               // 闪光概率
   const BREED_COST = 1e5;             // 繁殖灵石消耗
   const BREED_CD_MS = 1800000;        // 繁殖双亲冷却 30min（原 4h）
@@ -286,7 +288,8 @@
   function petStats(pet) {
     const sp = bySp(pet.sp) || D().species[0];
     if (!sp) return { atk: 0, def: 0, hp: 0, spd: 0 };
-    const lvMul = 1 + LV_GROWTH * (pet.lv - 1);
+    const grade = sp.grade || 1;
+    const lvMul = 1 + lvGrowth(grade) * (pet.lv - 1);
     const aptMul = tierOf(pet.apt).mult;
     const aw = pet.awaken ? 1.5 : 1;
     const m = lvMul * aptMul * aw;
