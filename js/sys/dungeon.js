@@ -347,6 +347,8 @@
     const n = d.tower;
     const need = layerNeed(n);
     const power = playerPower();
+    const p = XG.state.player;
+    const penalty = Math.floor(0.1 * XG.cfg.layerCost(p.realmIdx, p.layer));
     return {
       unlocked: XG.cfg.isUnlocked('dungeon_tower'),
       layer: n,
@@ -354,6 +356,8 @@
       need: need,
       power: power,
       winP: winRate(power, need),
+      penalty: penalty,
+      penaltyOk: (p.cult || 0) >= penalty,
       hiddenBoss: isBossLayer(n),
       boss: bossOf(n),
       affixes: affixList().map(function (a) { return { id: a.id, name: a.name, desc: a.desc, eff: a.eff }; }),
@@ -361,7 +365,7 @@
     };
   }
 
-  // 挑战当前层：胜利 layer+1 发掉落；失败无惩罚
+  // 挑战当前层：胜利 layer+1 发掉落；失败扣当前等级修为 10%（不足则不可挑战）
   function challengeTower() {
     if (!XG.cfg.isUnlocked('dungeon_tower')) return { ok: false, err: '镇妖塔尚未开启（金丹一层）' };
     const d = D();
@@ -370,8 +374,26 @@
     const need = layerNeed(n);
     const power = playerPower();
     const wp = winRate(power, need);
-    const baseRet = { ok: true, win: false, winP: wp, power: power, need: need, layer: n, hiddenBoss: boss, boss: bossOf(n), rewards: null };
-    if (!U().chance(wp)) return baseRet; // 惜败，毫无损失
+    // 失败惩罚校验：扣当前等级所需修为的 10%
+    const p = XG.state.player;
+    const penalty = Math.floor(0.1 * XG.cfg.layerCost(p.realmIdx, p.layer));
+    if ((p.cult || 0) < penalty) {
+      return { ok: false, err: '修为不足' + XG.util.fmt(penalty) + '，无法挑战镇妖塔' };
+    }
+    const baseRet = { ok: true, win: false, winP: wp, power: power, need: need, layer: n, hiddenBoss: boss, boss: bossOf(n), rewards: null, penalty: penalty };
+    if (!U().chance(wp)) {
+      // 失败：扣修为
+      if (penalty > 0) {
+        const cu = XG.sys.cultivation;
+        if (cu && typeof cu.addCult === 'function') {
+          try { cu.addCult(-penalty, '镇妖塔挑战失败'); } catch (e) { p.cult = Math.max(0, (p.cult || 0) - penalty); }
+        } else {
+          p.cult = Math.max(0, (p.cult || 0) - penalty);
+        }
+        XG.bus.emit('res:changed');
+      }
+      return baseRet;
+    }
 
     // —— 通关奖励：灵石/修为（标准收益）+ 随机掉落（装备/材料/残篇/蛋，受周词缀 rw*Pct 加成）——
     const rw = {

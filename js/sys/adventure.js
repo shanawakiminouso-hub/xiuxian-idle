@@ -363,24 +363,39 @@
     try { return XG.cfg.isUnlocked('adventure'); } catch (e) { return true; }
   }
 
+  /* ---------------- 奇遇奖励缩放 ---------------- */
+  // 按玩家当前境界 rate 与事件 minRealm 基准 rate 的比例缩放数值奖励
+  function rewardScale(e) {
+    const p = XG.state.player;
+    const baseRate = XG.cfg.REALMS[(e.minRealm || 0)] ? XG.cfg.REALMS[e.minRealm || 0].rate : 10;
+    const currRate = XG.cfg.REALMS[p.realmIdx] ? XG.cfg.REALMS[p.realmIdx].rate : baseRate;
+    if (baseRate <= 0) return 1;
+    return currRate / baseRate;
+  }
+
   /* ---------------- out 结算 ---------------- */
   function settleOut(e, choice, result) {
     const out = choice.out || {};
     const p = XG.state.player;
     const msg = result.msg, rw = result.rewards;
     const src = '奇遇·' + e.title;
+    // 奇遇奖励随境界缩放
+    const scale = rewardScale(e);
+    const sc = function (v) { return Math.max(1, Math.floor((v || 0) * scale)); };
 
-    if (out.cult) { giveCult(out.cult, src); rw.cult = (rw.cult || 0) + out.cult; msg.push('修为 +' + XG.util.fmt(out.cult)); }
+    if (out.cult) { const v = sc(out.cult); giveCult(v, src); rw.cult = (rw.cult || 0) + v; msg.push('修为 +' + XG.util.fmt(v)); }
     if (out.lingShi || out.lingYu || out.mat || out.pill || out.egg) {
       const d = {};
-      if (out.lingShi) d.lingShi = out.lingShi;
-      if (out.lingYu) d.lingYu = out.lingYu;
+      const ls = out.lingShi ? sc(out.lingShi) : 0;
+      const ly = out.lingYu ? sc(out.lingYu) : 0;
+      if (ls) d.lingShi = ls;
+      if (ly) d.lingYu = ly;
       if (out.mat) d.mat = out.mat;
       if (out.pill) d.pill = out.pill;
       if (out.egg) d.egg = out.egg;
       XG.addRes(d);
-      if (out.lingShi) { rw.lingShi = (rw.lingShi || 0) + out.lingShi; msg.push('灵石 +' + XG.util.fmt(out.lingShi)); }
-      if (out.lingYu) { rw.lingYu = (rw.lingYu || 0) + out.lingYu; msg.push('灵玉 +' + XG.util.fmt(out.lingYu)); }
+      if (ls) { rw.lingShi = (rw.lingShi || 0) + ls; msg.push('灵石 +' + XG.util.fmt(ls)); }
+      if (ly) { rw.lingYu = (rw.lingYu || 0) + ly; msg.push('灵玉 +' + XG.util.fmt(ly)); }
       if (out.mat) { rw.mat = rw.mat || {}; for (const id in out.mat) { rw.mat[id] = (rw.mat[id] || 0) + out.mat[id]; msg.push(matName(id) + '×' + out.mat[id]); } }
       if (out.pill) { rw.pill = rw.pill || {}; for (const id in out.pill) { rw.pill[id] = (rw.pill[id] || 0) + out.pill[id]; msg.push(pillName(id) + '×' + out.pill[id]); } }
       if (out.egg) { rw.egg = (rw.egg || 0) + out.egg; msg.push('灵宠蛋 +' + out.egg); }
