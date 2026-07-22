@@ -97,15 +97,16 @@ XG.bus.emit(evt, payload)
 ```js
 XG.cfg.REALMS = [
   // 顺序即进度；baseCost=该大境界每层突破所需修为基数；rate=该境界基础修为/秒
-  { id:'lianqi',  name:'炼气', baseCost:20,   rate:10,   breakRate:0.65 },
+  // baseCost 已按裸速全境耗时目标重调（金丹≈1天/元婴≈2天/化神≈3天/炼虚≈3.5天/合体~渡劫≈4天）
+  { id:'lianqi',  name:'炼气', baseCost:10,   rate:10,   breakRate:0.65 },
   { id:'zhuji',   name:'筑基', baseCost:4e3,  rate:40,   breakRate:0.60 },
-  { id:'jindan',  name:'金丹', baseCost:1e6,  rate:160,  breakRate:0.55 },
-  { id:'yuanying',name:'元婴', baseCost:2.5e8,rate:700,  breakRate:0.50 },
-  { id:'huashen', name:'化神', baseCost:6e10, rate:3e3,  breakRate:0.45 },
-  { id:'lianxu',  name:'炼虚', baseCost:1.5e13,rate:1.3e4,breakRate:0.40 },
-  { id:'heti',    name:'合体', baseCost:4e15, rate:6e4,  breakRate:0.35 },
-  { id:'dacheng', name:'大乘', baseCost:1e18, rate:2.5e5,breakRate:0.30 },
-  { id:'dujie',   name:'渡劫', baseCost:2.5e20,rate:1e6, breakRate:0.25 },
+  { id:'jindan',  name:'金丹', baseCost:4.3e4, rate:160,  breakRate:0.55 },
+  { id:'yuanying',name:'元婴', baseCost:3.8e5,rate:700,  breakRate:0.50 },
+  { id:'huashen', name:'化神', baseCost:2.4e6, rate:3e3,  breakRate:0.45 },
+  { id:'lianxu',  name:'炼虚', baseCost:1.23e7,rate:1.3e4,breakRate:0.40 },
+  { id:'heti',    name:'合体', baseCost:6.5e7, rate:6e4,  breakRate:0.35 },
+  { id:'dacheng', name:'大乘', baseCost:2.7e8, rate:2.5e5,breakRate:0.30 },
+  { id:'dujie',   name:'渡劫', baseCost:1.08e9,rate:1e6, breakRate:0.25 },
   { id:'feisheng',name:'飞升', baseCost:Infinity, rate:0, breakRate:0 },
 ];
 XG.cfg.LAYERS = 10;                    // 每个大境界 10 层小境界

@@ -5,17 +5,20 @@
 
   XG.cfg = {
     // 大境界表（顺序即进度；baseCost=每层突破修为基数；rate=基础修为/秒；breakRate=突破基础成功率）
+    // 节奏校准（2026 重调）：baseCost 按「裸速全境耗时目标」反推（Σ layer^2.2/(1+0.12(l-1)) ≈ 320），
+    // 目标：炼气≈5分钟 / 筑基≈9小时 / 金丹≈1天 / 元婴≈2天 / 化神≈3天 / 炼虚≈3.5天 / 合体≈4天 / 大乘≈4天 / 渡劫≈4天；
+    // 旧档 baseCost 每境 ×250（速率仅 ×4.3，每境耗时 ×58，元婴起曲线断裂），故压缩至每境 ×4~11。
     REALMS: [
       // 炼气 baseCost 20→10（QA 节奏校准）：首日炼气→筑基纯挂机 19.2 分钟 → 9.6 分钟（口径：Σcost/基础rate）
       { id: 'lianqi',   name: '炼气', baseCost: 10,     rate: 10,    breakRate: 0.65 },
       { id: 'zhuji',    name: '筑基', baseCost: 4e3,    rate: 40,    breakRate: 0.60 },
-      { id: 'jindan',   name: '金丹', baseCost: 1e6,    rate: 160,   breakRate: 0.55 },
-      { id: 'yuanying', name: '元婴', baseCost: 2.5e8,  rate: 700,   breakRate: 0.50 },
-      { id: 'huashen',  name: '化神', baseCost: 6e10,   rate: 3e3,   breakRate: 0.45 },
-      { id: 'lianxu',   name: '炼虚', baseCost: 1.5e13, rate: 1.3e4, breakRate: 0.40 },
-      { id: 'heti',     name: '合体', baseCost: 4e15,   rate: 6e4,   breakRate: 0.35 },
-      { id: 'dacheng',  name: '大乘', baseCost: 1e18,   rate: 2.5e5, breakRate: 0.30 },
-      { id: 'dujie',    name: '渡劫', baseCost: 2.5e20, rate: 1e6,   breakRate: 0.25 },
+      { id: 'jindan',   name: '金丹', baseCost: 4.3e4,  rate: 160,   breakRate: 0.55 },
+      { id: 'yuanying', name: '元婴', baseCost: 3.8e5,  rate: 700,   breakRate: 0.50 },
+      { id: 'huashen',  name: '化神', baseCost: 2.4e6,  rate: 3e3,   breakRate: 0.45 },
+      { id: 'lianxu',   name: '炼虚', baseCost: 1.23e7, rate: 1.3e4, breakRate: 0.40 },
+      { id: 'heti',     name: '合体', baseCost: 6.5e7,  rate: 6e4,   breakRate: 0.35 },
+      { id: 'dacheng',  name: '大乘', baseCost: 2.7e8,  rate: 2.5e5, breakRate: 0.30 },
+      { id: 'dujie',    name: '渡劫', baseCost: 1.08e9, rate: 1e6,   breakRate: 0.25 },
       { id: 'feisheng', name: '飞升', baseCost: Infinity, rate: 0,   breakRate: 0 },
     ],
 
