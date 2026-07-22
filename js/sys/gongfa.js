@@ -3,7 +3,7 @@
  * ============================ UI 对接面（供 ui 层调用的全部查询/操作函数） ============================
  * 常量（直接挂在 XG.sys.gongfa 上）：
  *   LV_MAX=20（功法等级上限） MAX_ACTIVE=4（装备槽） MAX_CUSTOM=9（自创上限）
- *   PROF_PER_SEC=1/6（熟练度/秒，约 100 分钟圆满） PROF_BONUS=1.5（熟练圆满后 eff 倍率）
+ *   PROF_PER_SEC=5/3（熟练度/秒，约 10 分钟圆满） PROF_BONUS=1.5（熟练圆满后 eff 倍率）
  *   CREATE_FRAG_COST=24（自创一次消耗的任意残篇总数）
  *
  * 查询：
@@ -72,7 +72,7 @@
   const LV_MAX = 20;          // 功法等级上限（每级 eff 线性成长）
   const MAX_ACTIVE = 4;       // 装备槽上限（state.gongfa.active）
   const MAX_CUSTOM = 9;       // 自创功法上限
-  const PROF_PER_SEC = 1 / 6; // 装备中功法熟练度增速（满 1000 约 100 分钟）
+  const PROF_PER_SEC = 5 / 3; // 装备中功法熟练度增速（满 1000 约 10 分钟）
   const PROF_BONUS = 1.5;     // 熟练度圆满后 eff 倍率
   const CREATE_FRAG_COST = 24;// 自创一次消耗的任意残篇总数
   // 品阶→升级消耗参考境界（无 unlock 字段的隐藏功法用；g1~3 炼气，g4 筑基，g5 金丹，g6 元婴，g7 化神，g8 合体，g9 大乘）

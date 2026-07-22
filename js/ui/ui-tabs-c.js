@@ -208,7 +208,7 @@
         + '<div class="muted">道侣在身，修炼速度 +10%。</div>'
         + '<div class="row" style="margin-top:6px">'
         + '<button class="btn btn-primary" data-act="f-dual"' + (pi.canDual ? '' : ' disabled') + '>'
-        + (pi.canDual ? '双修（每日一次）' : '今日已双修') + '</button>'
+        + (pi.canDual ? '双修（每小时一次）' : '调息中，稍后再修') + '</button>'
         + '<button class="btn btn-ghost" data-act="f-story">剧情回顾</button></div></div>';
     }
     /* ---- 统计 + 道友列表（sys 已按 关系>好感>境界 排序） ---- */
@@ -267,7 +267,7 @@
     const btns = [];
     if (f.relation !== 'partner') {
       btns.push({
-        text: f.canDiscuss ? '煮茶论道' : '今日已论道',
+        text: f.canDiscuss ? '煮茶论道' : '静思中，稍后再论',
         cls: f.canDiscuss ? 'btn-primary' : 'btn-ghost',
         cb: function () { doDiscuss(el, uid); },
       });
@@ -394,7 +394,7 @@
 
     const lingYu = (XG.state && XG.state.res && XG.state.res.lingYu) || 0;
     let html = '<div class="card"><div class="row" style="justify-content:space-between">'
-      + '<div>🕐 换新倒计时：<b>' + fmtTime(m.nextInSec) + '</b><div class="muted">每两个时辰自动换新一批</div></div>'
+      + '<div>🕐 换新倒计时：<b>' + fmtTime(m.nextInSec) + '</b><div class="muted">每 10 分钟自动换新一批</div></div>'
       + '<button class="btn btn-primary" data-act="m-refresh"' + (lingYu >= 5 ? '' : ' disabled') + '>灵玉×5 立即换新</button>'
       + '</div></div>';
     if (!m.slots || !m.slots.length) html += '<div class="card xtc-lock">今日坊市冷清，暂无货色。</div>';

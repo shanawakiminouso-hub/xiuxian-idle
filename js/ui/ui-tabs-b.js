@@ -738,7 +738,7 @@
     let h = '<div class="card"><h3 class="card-title">上古遗府 · 限时寻宝</h3>';
     if (!info.active) {
       h += '<div class="card-sub">每场 ' + Math.floor(info.dur / 60) + ' 分钟，府内宝箱连绵而出（每 4~8 息一只）。</div>'
-        + '<div class="tbb-rowline" style="margin-top:6px"><span>今日免费次数 <b style="color:var(--gold-d)">' + info.freeLeft + '</b> / 1</span>'
+        + '<div class="tbb-rowline" style="margin-top:6px"><span>今日免费次数 <b style="color:var(--gold-d)">' + info.freeLeft + '</b> / 10</span>'
         + '<span class="muted">其后门票 灵玉 ' + info.payCost + '/次</span><span class="tbb-sp"></span>'
         + '<button class="btn btn-primary" data-act="dg-hunt-enter">' + (info.freeLeft > 0 ? '免费入府' : '购票入府') + '</button></div>';
       if (dg.huntGains.length) {

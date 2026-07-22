@@ -101,7 +101,7 @@
 
 - equips `sets[].pieces`（7 套共 32 件）全部命中 `bases` id；
 - fellows `lines` 结构（dynamic 10 类 / discuss 10 性格 / help 等 7 类）与契约 §9.9 一致，文案 236 条 ≥200；
-- world `marketRules`（refreshSec 7200 / slots 6 / priceByPersona 覆盖全部 10 性格 / priceByRelation / stock）结构完整；
+- world `marketRules`（refreshSec 600 / slots 6 / priceByPersona 覆盖全部 10 性格 / priceByRelation / stock）结构完整；
 - pets evo.to / evo.item、bloods[].skill、gongfa bonds.need / meridians.need 引用全部有效；
 - 跨文件连锁起点 evb_xuanyuan_1 / evb_longyuan_1 / evb_gui_xu_1 均存在。
 

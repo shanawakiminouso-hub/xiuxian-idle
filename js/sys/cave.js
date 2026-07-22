@@ -93,7 +93,7 @@
     lt: {
       name: '灵田', icon: '田', wx: 'mu', lsBase: 800,
       desc: '引灵泉灌溉的药圃，自行孕育低阶灵草；建成后灵宠可来此打工。',
-      effDesc: '每小时产灵草 1.2 株/级，并解锁灵宠灵田岗',
+      effDesc: '每小时产灵草 12 株/级，并解锁灵宠灵田岗',
       costMat: [[0, 'herb_lingzhi'], [5, 'herb_renshen'], [10, 'herb_chiyancao'], [15, 'herb_hunyuancao']],
     },
     df: {
@@ -233,7 +233,7 @@
       case 'lm': return { cultRatePct: 2 * lv * mult };
       case 'df': return { alchSuccPct: 2 * lv * mult };
       case 'qs': return { forgeSuccPct: 2 * lv * mult };
-      case 'lt': return { herbPerHour: 1.2 * lv * mult };
+      case 'lt': return { herbPerHour: 12 * lv * mult };
       case 'sl': return { petCap: lv + Math.floor(lv * fsPctOf(id) / 100), workSlots: lv + Math.floor(lv * fsPctOf(id) / 100) };
     }
     return {};

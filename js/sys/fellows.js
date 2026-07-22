@@ -7,19 +7,19 @@
  *                                        power,reincarn,canDiscuss,lastNews}]  按好感>境界排序
  *   XG.sys.fellows.get(uid)          → 单个道友详情（同上结构 + talent/stateUntil/gifts/metAt/lastNews），无则 null
  *   XG.sys.fellows.count()           → {total, friend, rival, partner}
- *   XG.sys.fellows.listHelp()        → [{hid,uid,name,text,kind,id,n,itemName,icon,done}]  今日求助（done:0待处理 1已助 -1已拒）
+ *   XG.sys.fellows.listHelp()        → [{hid,uid,name,text,kind,id,n,itemName,icon,done}]  当前一波求助（done:0待处理 1已助 -1已拒）
  *   XG.sys.fellows.market()          → {unlocked, refreshAt, nextInSec, slots:[{sid,uid,sellerName,persona,
  *                                        kind,id,baseId,grade,n,name,icon,price,cur,curName,sold,line}]}  坊市货栏
  *   XG.sys.fellows.partnerInfo()     → null | {uid,name,realmName,canDual}  道侣状态
  *   XG.sys.fellows.canDiscuss(uid)   → bool
  * 操作（均返回 {ok, msg, ...}，ok=false 时 msg 为失败原因，可直接 toast）：
- *   XG.sys.fellows.discuss(uid)      → {ok,msg,text,cult,favor}      论道（每日每友1次：+修为+好感+性格文案）
+ *   XG.sys.fellows.discuss(uid)      → {ok,msg,text,cult,favor}      论道（每友10分钟冷却：+修为+好感+性格文案）
  *   XG.sys.fellows.satisfyHelp(hid)  → {ok,msg,text,gift}            满足求助（扣资源，好感+10+回赠）
  *   XG.sys.fellows.refuseHelp(hid)   → {ok,msg,text}                 拒绝求助（refuse 池文案，无惩罚）
  *   XG.sys.fellows.buyMarket(sid)    → {ok,msg}                      坊市购买（耗灵石/灵玉，每格限量）
  *   XG.sys.fellows.refreshMarket()   → {ok,msg}                      灵玉×5 立即刷新坊市
  *   XG.sys.fellows.becomePartner(uid)→ {ok,msg}                      结缘道侣（好感=100，每日限1次操作）
- *   XG.sys.fellows.dualCultivate()   → {ok,msg,cult}                 每日双修一次（修为加成）
+ *   XG.sys.fellows.dualCultivate()   → {ok,msg,cult}                 每小时双修一次（修为加成）
  * 属性聚合：getMods() → 道侣在世时 {cultRatePct:10}
  *
  * ============================ 写入的 stats 键（XG.state.stats，snake） ============================
@@ -37,7 +37,7 @@
  *       tower:clear {layer}（33 倍数层播报）
  *
  * ============================ offline 行为 ============================
- * offline(dt)：按 10 分钟一步循环模拟全部道友成长/突破/卡关/渡劫/转世/随机动态；
+ * offline(dt)：按 5 分钟一步循环模拟全部道友成长/突破/卡关/渡劫/转世/随机动态；
  *   传闻不逐条入 state.news，压缩为「总条数+≤3 条要闻样本」经报告片段 fellowNews 返回（契约 §8 弹窗展示）；
  *   坊市按实际流逝时间补刷新；周报/关系判定同步推进。
  *
@@ -53,7 +53,7 @@
   XG.sysOrder = XG.sysOrder || [];
 
   /* ---------------- 常量 ---------------- */
-  const STEP_SEC = 600;               // 成长步进：游戏内 10 分钟一步（online/offline 同路径）
+  const STEP_SEC = 300;               // 成长步进：游戏内 5 分钟一步（online/offline 同路径）
   const STEP_NEWS_MAX = 3;            // 每步最多播报 2~3 条（采样克制）
   const STUCK_H = [6, 48];            // 卡关时长区间（小时）
   const SURGE_SEC = 7200;             // 顿悟（surge）持续 2 小时
@@ -62,7 +62,10 @@
   const FAVOR_PARTNER = 100;          // 道侣门槛
   const RIVAL_CAP = 3;                // 宿敌数量上限
   const MARKET_MANUAL_COST = 5;       // 灵玉立即刷新坊市
-  const HELP_PER_DAY = [0, 2];        // 每日求助道友数区间
+  const HELP_ROLL_MS = 4 * 3600000;   // 求助重摇间隔（每 4 小时一波）
+  const HELP_PER_ROLL = [1, 3];       // 每波求助道友数区间
+  const DISCUSS_CD_MS = 600000;       // 论道冷却（每友 10 分钟）
+  const DUAL_CD_MS = 3600000;         // 双修冷却（1 小时）
   const OUHUANG_GIFT_P = 0.03;        // 欧皇回赠隐藏功法概率
   const OUHUANG_SLOT_P = 0.08;        // 欧皇货栏超阶概率
   const HILIGHT_GAP_MS = 45000;       // 玩家高光播报最小间隔
@@ -486,18 +489,18 @@
     return { desc: '灵石×' + U().fmt(n2), apply: function () { XG.addRes({ lingShi: n2 }); } };
   }
 
-  /* ---------------- 求助（每日 0~2 名道友） ---------------- */
+  /* ---------------- 求助（每 4 小时一波，1~3 名道友） ---------------- */
   function dailyHelp() {
     const d = S().daily = S().daily || {};
-    if (!d.help || d.help.day !== dayStr() || !Array.isArray(d.help.list)) rollDailyHelp();
+    if (!d.help || !d.help.at || Date.now() - d.help.at >= HELP_ROLL_MS || !Array.isArray(d.help.list)) rollDailyHelp();
     return S().daily.help;
   }
 
   function rollDailyHelp() {
     const u = U();
     const d = S().daily;
-    d.help = { day: dayStr(), list: [] };
-    const n = u.randInt(HELP_PER_DAY[0], HELP_PER_DAY[1]);
+    d.help = { at: Date.now(), list: [] };
+    const n = u.randInt(HELP_PER_ROLL[0], HELP_PER_ROLL[1]);
     if (!n || !(S().fellows || []).length) return;
     const p = S().player;
     const helpPool = lines().help || [];
@@ -535,8 +538,8 @@
     }
   }
 
-  /* ---------------- 坊市（筑基5层解锁，2 时辰刷新 6 栏） ---------------- */
-  function marketRules() { return (XG.data.world && XG.data.world.marketRules) || { refreshSec: 7200, slots: 6, priceByPersona: {}, priceByRelation: {}, stock: { kindW: {}, basePrice: {}, currencyW: {} } }; }
+  /* ---------------- 坊市（筑基5层解锁，10 分钟刷新 6 栏） ---------------- */
+  function marketRules() { return (XG.data.world && XG.data.world.marketRules) || { refreshSec: 600, slots: 6, priceByPersona: {}, priceByRelation: {}, stock: { kindW: {}, basePrice: {}, currencyW: {} } }; }
   function marketSt() {
     const st = S();
     st.fellowMarket = st.fellowMarket || { at: 0, slots: [] };
@@ -683,14 +686,13 @@
 
     // 主循环每秒：累计满 10 分钟走一步（online 与 offline 同路径）
     tick(dt) {
-      // 跨日检查（廉价）：求助重roll
-      const d = S().daily || {};
-      if (!d.help || d.help.day !== dayStr()) rollDailyHelp();
+      // 求助到点重摇（dailyHelp 内部按 4 小时间隔判定）
+      dailyHelp();
       // 坊市到点刷新
       if (marketUnlocked()) {
         const mr = marketRules();
         const st = marketSt();
-        if (!st.slots.length || Date.now() - st.at >= (mr.refreshSec || 7200) * 1000) genMarket(Date.now());
+        if (!st.slots.length || Date.now() - st.at >= (mr.refreshSec || 600) * 1000) genMarket(Date.now());
       }
       // 成长步进
       this._acc += dt;
@@ -711,7 +713,7 @@
       // 坊市按流逝时间补刷新
       if (marketUnlocked()) {
         const mr = marketRules();
-        if (now - marketSt().at >= (mr.refreshSec || 7200) * 1000) genMarket(now);
+        if (now - marketSt().at >= (mr.refreshSec || 600) * 1000) genMarket(now);
       }
       if (!steps || !buf.count) return null;
       const fellowNews = ['闭关这些时日，道友圈共传出 ' + buf.count + ' 桩动静，最引人侧目的有：'];
@@ -787,18 +789,18 @@
       const f = findFellow(uid);
       if (!f || !f.alive) return false;
       const d = S().daily || {};
-      return !(d.discuss && d.discuss[uid] === dayStr());
+      return !(d.discussAt && d.discussAt[uid] > Date.now());
     },
 
-    // 论道：每日每友1次；+修为（对方境界越高越多）+好感（×性格 favorGain）；性格池文案+最近动态呼应
+    // 论道：每友 10 分钟冷却；+修为（对方境界越高越多）+好感（×性格 favorGain）；性格池文案+最近动态呼应
     discuss(uid) {
       const f = findFellow(uid);
       if (!f || !f.alive) return { ok: false, msg: '查无此人。' };
-      if (!this.canDiscuss(uid)) return { ok: false, msg: '今日已与' + f.name + '论过道了。' };
+      if (!this.canDiscuss(uid)) return { ok: false, msg: f.name + '正在静思，盏茶后再论。' };
       const u = U();
       const d = S().daily = S().daily || {};
-      d.discuss = d.discuss || {};
-      d.discuss[uid] = dayStr();
+      d.discussAt = d.discussAt || {};
+      d.discussAt[uid] = Date.now() + DISCUSS_CD_MS;
 
       const persona = personaOf(f);
       const cultBase = XG.cfg.REALMS[f.realmIdx].rate * (1 + 0.12 * (f.layer - 1));
@@ -898,7 +900,7 @@
       return {
         unlocked: marketUnlocked(),
         refreshAt: st.at,
-        nextInSec: Math.max(0, Math.ceil((st.at + (mr.refreshSec || 7200) * 1000 - now) / 1000)),
+        nextInSec: Math.max(0, Math.ceil((st.at + (mr.refreshSec || 600) * 1000 - now) / 1000)),
         slots: st.slots.map(function (s) {
           const f = findFellow(s.uid);
           return {
@@ -970,7 +972,7 @@
       const d = S().daily || {};
       return {
         uid: f.uid, name: f.name, realmName: realmName(f.realmIdx, f.layer),
-        favor: f.favor, canDual: d.dual !== dayStr(),
+        favor: f.favor, canDual: !(d.dualAt > Date.now()),
       };
     },
 
@@ -999,14 +1001,14 @@
       return { ok: true, msg: '你与' + f.name + '结为道侣！修炼速度永久+10%。', text: text };
     },
 
-    // 每日双修一次：修为加成（按道侣境界 rate 折算）
+    // 双修：每小时一次，修为加成（按道侣境界 rate 折算）
     dualCultivate() {
       const info = this.partnerInfo();
       if (!info) return { ok: false, msg: '你尚无道侣。' };
-      if (!info.canDual) return { ok: false, msg: '今日已双修过了。' };
+      if (!info.canDual) return { ok: false, msg: '调息未毕，一个时辰后再修。' };
       const f = findFellow(info.uid);
       const d = S().daily = S().daily || {};
-      d.dual = dayStr();
+      d.dualAt = Date.now() + DUAL_CD_MS;
       const base = XG.cfg.REALMS[f.realmIdx].rate * (1 + 0.12 * (f.layer - 1));
       const cult = giveCult(base * U().randInt(600, 1800), '与' + f.name + '双修');
       const text = fill(U().pick(lines().partner || ['「双修共进。」']), f);

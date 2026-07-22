@@ -31,7 +31,7 @@
  *   sweepInfo() → { freeLeft, payCost(灵玉/次), perDay, best, canSweep, est:{lingShi, cult} }
  *      est=按当前 towerBest 预估一键扫荡收益（(towerBest−1) 层标准收益 ×0.8）。
  *   quickSweep() → { ok, err?, msg:[文案…], gains:{lingShi, cult, mat:{id:n}} }
- *      一键扫荡：每日免费 3 次（跨天自动重置），其后灵玉 5/次；直接领取 (towerBest−1) 层标准收益×0.8。
+ *      一键扫荡：每日免费 30 次（跨天自动重置），其后灵玉 5/次；直接领取 (towerBest−1) 层标准收益×0.8。
  *
  * ============================================================
  * 【写入 XG.state.stats 的键】（懒初始化，成就统计器读取）
@@ -69,7 +69,7 @@
   const HUNT_CD_MS = 2000;     // 寻宝手动「探寻」冷却 2s
   const HUNT_AUTO_SEC = 5;     // 寻宝放置自动开箱间隔 5s
   const HUNT_PAY = 10;         // 寻宝门票（灵玉/次，每日首次免费）
-  const SWEEP_PER_DAY = 3;     // 每日免费扫荡次数
+  const SWEEP_PER_DAY = 30;    // 每日免费扫荡次数
   const SWEEP_PAY = 5;         // 扫荡加次票价（灵玉/次）
   const SWEEP_RATE = 0.8;      // 扫荡收益折算系数
 
@@ -504,10 +504,10 @@
 
   /* ==================== 限时寻宝 ==================== */
   function huntCfg() { return dun().hunt; }
-  // 今日免费次数（daily.hunt，main.js 每日重置整个 daily 对象）
+  // 今日免费次数（daily.hunt，main.js 每日重置整个 daily 对象；每日前 10 次免费）
   function huntFreeLeft() {
     const daily = (XG.state.daily = XG.state.daily || { day: '', discuss: {}, help: {}, gift: 0 });
-    return (daily.hunt || 0) < 1 ? 1 : 0;
+    return Math.max(0, 10 - (daily.hunt || 0));
   }
   function huntInfo() {
     const d = D();
@@ -525,15 +525,15 @@
     };
   }
 
-  // 进入遗府：耗门票（每日首次免费，其后灵玉 10/次），开启 300s 场次
+  // 进入遗府：耗门票（每日前 10 次免费，其后灵玉 10/次），开启 300s 场次
   function enterHunt() {
     if (!XG.cfg.isUnlocked('dungeon_hunt')) return { ok: false, err: '遗府尚未显世（炼虚一层）' };
     const d = D();
     if (d.huntRun) return { ok: false, err: '已身处在遗府之中' };
     const daily = XG.state.daily;
     let free = false;
-    if ((daily.hunt || 0) < 1) {
-      daily.hunt = 1;
+    if ((daily.hunt || 0) < 10) {
+      daily.hunt = (daily.hunt || 0) + 1;
       free = true;
     } else {
       if (!XG.hasRes({ lingYu: HUNT_PAY })) return { ok: false, err: '灵玉不足（门票 ' + HUNT_PAY + ' 灵玉）' };
@@ -633,7 +633,7 @@
     };
   }
 
-  // 一键扫荡：直接领取 (towerBest−1) 层标准收益 ×0.8；免费 3 次/日，其后灵玉 5/次
+  // 一键扫荡：直接领取 (towerBest−1) 层标准收益 ×0.8；免费 30 次/日，其后灵玉 5/次
   function quickSweep() {
     ensureSweepDay();
     const d = D();

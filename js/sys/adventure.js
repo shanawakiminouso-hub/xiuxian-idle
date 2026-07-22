@@ -76,8 +76,8 @@
   XG.sys = XG.sys || {};
   XG.sysOrder = XG.sysOrder || [];
 
-  const CD_MIN = 300;   // 修炼奇遇最小间隔（秒）= 5 分钟
-  const CD_MAX = 900;   // 最大间隔（秒）= 15 分钟
+  const CD_MIN = 60;    // 修炼奇遇最小间隔（秒）= 1 分钟
+  const CD_MAX = 180;   // 最大间隔（秒）= 3 分钟
   const STUCK_MS = 3 * 86400000; // stuck3d：3 天未破境
 
   /* ---------------- 状态存取（懒初始化，读档合并后自恢复） ---------------- */

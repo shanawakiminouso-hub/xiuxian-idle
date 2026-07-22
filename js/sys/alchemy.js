@@ -5,7 +5,7 @@
  *   外部来源（历练掉落/奇遇事件/坊市神秘商人/成就奖励）调 learn(recipeId) / learnRandomRecipe(maxAlchLv)；
  *   隐藏丹方：cond='explode' 炸炉 12% 顿悟、cond='hiddenmap' 归墟/龙渊派遣 8% 掉落残方（监听 expedition:done）。
  * 炼丹师等级：炼制成功得 exp 升级（满级 9 级），升级自动参悟丹方 + 成功率加成（每级 +2%）。
- * 丹炉：按 furnaces 阶梯顺序购置（灵石），succ 加成功率 / speed 缩短耗时（耗时 = time / speed）。
+ * 丹炉：按 furnaces 阶梯顺序购置（灵石），succ 加成功率 / speed 缩短耗时（耗时 = time × 0.25 / speed）。
  * 异火：fires 收集（fires[id]=1）与切换装备（fire=null 即凡火）；隐藏异火——
  *   fire_hundun 混沌虚火：累计炸炉 ≥100 次（监听自身 alch:done）；
  *   fire_liuding 六丁神火：归墟派遣完成 15%（监听 expedition:done）；
@@ -75,7 +75,8 @@
   const EXPLODE_EPIPHANY = 0.12;    // 炸炉顿悟隐藏丹方概率
   const EXPLODE_ASH = 0.6;          // 炸炉得药灰（安慰奖）概率
   const BREAK_PILL_MAX = 3;         // 同次突破最多叠 3 颗破境丹（契约 cfg.BREAK_PILL_BONUS）
-  const TOX_DECAY_PER_SEC = 1 / 180;// 丹毒衰减：180 秒 1 点
+  const CRAFT_TIME_MULT = 0.25;   // 炼丹耗时全局倍率（耗时 = time × 0.25 / 炉速）
+  const TOX_DECAY_PER_SEC = 1 / 60;// 丹毒衰减：60 秒 1 点
   const TOX_SLOW = 50;              // 丹毒 >50 修炼 −20%
   const TOX_BAN = 80;               // 丹毒 >80 禁止服丹
   const ASH_HERBS = ['herb_qingling', 'herb_ningxue', 'herb_ningshen', 'herb_ziye']; // 药灰安慰奖池
@@ -272,7 +273,7 @@
     const a = A();
     const r = recipeOf(recipeId);
     XG.addRes({ lingShi: -(r.cost.lingShi || 0), mat: negate(r.cost.mat) });
-    const dur = Math.max(3, r.time / (curFurnace().speed || 1)); // 耗时 = time / 炉速
+    const dur = Math.max(2, r.time * CRAFT_TIME_MULT / (curFurnace().speed || 1)); // 耗时 = time × 全局倍率 / 炉速
     const now = Date.now();
     a.job = { recipeId: recipeId, startAt: now, endAt: now + dur * 1000, dur: dur };
     XG.bus.emit('save:dirty');

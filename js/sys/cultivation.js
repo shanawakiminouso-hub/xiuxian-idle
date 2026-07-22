@@ -70,7 +70,7 @@
     dazuo:  { name: '打坐', mult: 1.0, desc: '心平气和，吐纳天地。' },
     biguan: { name: '闭关', mult: 2.0, desc: '闭死关苦修，进境翻倍；入关即锁脉十分钟，期间不可切换。' },
   };
-  const BIGUAN_LOCK_SEC = 600;   // 闭关锁脉时长（秒）
+  const BIGUAN_LOCK_SEC = 120;   // 闭关锁脉时长（秒）
   const DUNWU_DUR_SEC = 30;      // 顿悟持续（秒）
   const DUNWU_MULT = 5;          // 顿悟修炼倍率
   const DUNWU_BASE_P = 1 / 900;  // 顿悟基础触发率（每秒，期望约 15 分钟一次；挂机三分钟内约两成几率遇见）

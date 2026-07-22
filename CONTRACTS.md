@@ -157,7 +157,7 @@ XG.state = {
   ach: {},                                                   // {id: {done:1, claimed:1}}
   codex: { gongfa: [], pill: [], pet: [], equip: [], fellow: [] },
   adventure: { done: {}, chains: {}, cd: 0 },                // 奇遇: 已做once事件/连锁进度/冷却
-  daily: { day: '', discuss: {}, help: {}, gift: 0 },        // 每日: 论道/求助/免费赠礼 记录
+  daily: { day: '', discussAt: {}, help: { at: 0, list: [] }, gift: 0 }, // 冷却/求助记录（论道 discussAt、求助 help.at、双修 dualAt 均为时间戳）
   settings: { newsCollapsed: false, sound: false },
 };
 ```
@@ -247,7 +247,7 @@ XG.offline.settle()            // 启动时调用：dt=min(now-lastSeen, cap)；
 ### 9.6 `data/world.js` —— `XG.data.world = { maps:[≥8], dungeons:{…}, marketRules:{…} }`
 - `maps`：`{id, name, icon, unlock:{realmIdx,layer}, hidden:bool(≥2), power:建议战力, dur:派遣时长档[1分,3分,10分], drops:{mat:{id:[min,max],w}, pill?, frag?, eggChance, recipeChance}, sp:'sp_* 特产id', events:['地图专属事件id…≥3'], desc}`；≥8 张（现 9 张：7 普通+2 隐藏：归墟/龙渊，隐藏图进入条件写在 `cond`，由 expedition 判定）。
 - `dungeons`：`{ tower:{affixPool:[≥12 词缀 {id,name,eff,desc}], hiddenBossEvery:33, rewards(layer)→公式注释}, guard:{waves:[…≥10 档]}, hunt:{dur:300, pools:[…]} }`。
-- `marketRules`：坊市 `{refreshSec:7200, slots:6, priceByPersona:{…奸商×1.3/挚友×0.8…}, stock:{…生成规则注释}}`。
+- `marketRules`：坊市 `{refreshSec:600, slots:6, priceByPersona:{…奸商×1.3/挚友×0.8…}, stock:{…生成规则注释}}`。
 
 ### 9.7 `data/events_a.js` + `data/events_b.js` —— 奇遇事件池合计 ≥80 条
 - 统一 push 到 `XG.data.events = XG.data.events || []`；a 文件 id 前缀 `eva_*`（≥45 条，主打修炼/日常/道友偶遇），b 文件 `evb_*`（≥40 条，主打历练专属/隐藏/彩蛋）。
@@ -299,10 +299,10 @@ XG.sys.xxx = {
 - `sys/pets.js`：孵蛋/捕捉(历练掉落)、资质/性格/技能 roll、升级(经验丹/出战)、进化、血脉觉醒、繁殖(两只≥lv30 耗灵石，后代继承血脉+随机资质)、出战加成(getMods)、打工（兽栏/灵田产出）。
 - `sys/cave.js`：建筑升级（耗灵石+材料）、产出（灵田草药/h、聚灵阵修炼%、兽栏宠物位）、3x3 风水摆放（相邻相生+5%，五行循环）、灵脉等级=建筑上限。
 - `sys/expedition.js`：地图解锁、派遣（选 1~3 宠 + 时长档）、特产/事件触发、隐藏图条件、一键派遣（自动最优）。
-- `sys/dungeon.js`：爬塔(无尽，每层战力校验，掉落装备/材料；每33层隐藏BOSS)、守关(波次生存)、限时寻宝(300s 点击/自动寻宝箱)、周词缀（mulberry32(weekId) 选 3 条）、扫荡（每日免费3次+灵玉）。
+- `sys/dungeon.js`：爬塔(无尽，每层战力校验，掉落装备/材料；每33层隐藏BOSS)、守关(波次生存)、限时寻宝(300s 点击/自动寻宝箱，每日前10次免费)、周词缀（mulberry32(weekId) 选 3 条）、扫荡（每日免费30次+灵玉）。
 - `sys/pvp.js`：匹配战力±30% 的道友、自动战斗（流派克制+战力+随机）、段位（青铜→仙尊，pts 阈值）、赛季(weekId)结算奖励、战报 history(≤20)。
 - `sys/adventure.js`：修炼中每 5~15 分钟 roll 一次（权重×条件过滤）、探索时必触发 1 次/次、连锁队列、once 记录、冷却。
-- `sys/fellows.js`：生成 30~50 道友（名字/性格/流派/灵根/成长曲线/状态机 normal|stuck|surge|trib）、离线分 10 分钟步进模拟其修为与事件并产 news、论道(每日每友1次: 修为+好感+按性格出文案)、求助/回赠、坊市挂售(market 规则)、宿敌(境界差≤1 大境界 且 power 相近→排行互超时发战书)、挚友(好感≥60 突破送礼)、道侣(好感=100 结缘: 永久 cultRate+10%、专属剧情 news)、克制刷屏：news 生成按概率采样。
+- `sys/fellows.js`：生成 30~50 道友（名字/性格/流派/灵根/成长曲线/状态机 normal|stuck|surge|trib）、离线分 5 分钟步进模拟其修为与事件并产 news、论道(每友10分钟冷却: 修为+好感+按性格出文案)、求助(每4小时一波)/回赠、坊市挂售(market 规则)、宿敌(境界差≤1 大境界 且 power 相近→排行互超时发战书)、挚友(好感≥60 突破送礼)、道侣(好感=100 结缘: 永久 cultRate+10%、专属剧情 news、双修每小时1次)、克制刷屏：news 生成按概率采样。
 - `sys/reincarn.js`：渡劫10层后开启飞升挑战（天劫 9 波战力校验+丹药消耗）、成功→轮回: 保留 codex/ach/永久buff/灵玉×20%、重置其余；轮回点 rp=境界累计+成就数/10；天赋树 15 节点 3 支（修炼/战斗/机缘，data 内嵌本文件）；转世身份随机表 ≥12（影响开局灵根/资源/初始功法）。
 - `sys/collection.js`：图鉴登记(codex)、完成度 %、成就统计器(§9.8 的 check.k 全实现)、达成发奖+news、隐藏成就不显示条件（显示 ???）。
 
