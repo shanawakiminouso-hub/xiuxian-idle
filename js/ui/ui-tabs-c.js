@@ -216,6 +216,7 @@
     try { cnt = fs.count() || cnt; } catch (e) {}
     html += '<div class="card-sub" style="margin:4px 2px 8px">道友 ' + fmtInt(cnt.total)
       + ' 人 · 挚友 ' + fmtInt(cnt.friend) + ' · 宿敌 ' + fmtInt(cnt.rival) + ' · 道侣 ' + fmtInt(cnt.partner) + '</div>';
+    html += '<div class="row" style="margin:0 2px 8px"><button class="btn btn-primary" data-act="f-discuss-all">🍵 一键煮茶论道</button></div>';
     let list = [];
     try { list = fs.list() || []; } catch (e) { list = []; }
     if (!list.length) html += '<div class="card xtc-lock">四下无人，待境界高深自有机缘结识。</div>';
@@ -314,6 +315,14 @@
     const fs = sys('fellows');
     if (act === 'f-detail') {
       showFellowDetail(el, t.getAttribute('data-uid'));
+    } else if (act === 'f-discuss-all') {
+      if (!fs) return;
+      let r = null;
+      try { r = fs.discussAll(); } catch (err) { r = null; }
+      if (!r) { toast('论道未成。', 'err'); return; }
+      toast(r.msg, r.ok ? undefined : 'err');
+      if (r.ok && r.cult) pop('修为+' + fmt(r.cult), 'pop-good');
+      renderFellows(el);
     } else if (act === 'help-ok' || act === 'help-no') {
       if (!fs) return;
       const hid = t.getAttribute('data-hid');

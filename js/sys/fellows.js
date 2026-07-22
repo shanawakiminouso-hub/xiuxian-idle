@@ -14,6 +14,7 @@
  *   XG.sys.fellows.canDiscuss(uid)   → bool
  * 操作（均返回 {ok, msg, ...}，ok=false 时 msg 为失败原因，可直接 toast）：
  *   XG.sys.fellows.discuss(uid)      → {ok,msg,text,cult,favor}      论道（每友10分钟冷却：+修为+好感+性格文案）
+ *   XG.sys.fellows.discussAll()      → {ok,msg,count,cult}           一键论道（与全部冷却完毕的道友依次煮茶）
  *   XG.sys.fellows.satisfyHelp(hid)  → {ok,msg,text,gift}            满足求助（扣资源，好感+10+回赠）
  *   XG.sys.fellows.refuseHelp(hid)   → {ok,msg,text}                 拒绝求助（refuse 池文案，无惩罚）
  *   XG.sys.fellows.buyMarket(sid)    → {ok,msg}                      坊市购买（耗灵石/灵玉，每格限量）
@@ -816,6 +817,28 @@
         text += '\n「前番闻你' + f.lastNews.k + '之事，可有什么心得，说与我听听？」';
       }
       return { ok: true, msg: '与' + f.name + '论道一番，修为+' + u.fmt(cult) + '，好感+' + favorAdd, text: text, cult: cult, favor: f.favor };
+    },
+
+    // 一键论道：与全部冷却完毕的道友依次煮茶，汇总收益（契约 quick 操作口径）
+    discussAll() {
+      const fs = (S().fellows || []).filter(function (f) { return f.alive; });
+      let count = 0, cult = 0;
+      const names = [];
+      const self = this;
+      fs.forEach(function (f) {
+        if (!self.canDiscuss(f.uid)) return;
+        const r = self.discuss(f.uid);
+        if (r && r.ok) {
+          count++;
+          cult += r.cult || 0;
+          if (names.length < 3) names.push(f.name);
+        }
+      });
+      if (!count) return { ok: false, msg: '诸友皆在静思，盏茶后再来。' };
+      return {
+        ok: true, count: count, cult: cult,
+        msg: '与 ' + names.join('、') + (count > 3 ? ' 等 ' : ' 共 ') + count + ' 位道友煮茶论道，修为+' + U().fmt(cult) + '。',
+      };
     },
 
     listHelp() {
