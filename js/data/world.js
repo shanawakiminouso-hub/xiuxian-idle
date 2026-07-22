@@ -170,6 +170,7 @@
           gem_zijing: [1, 1, 5], gem_xuepo: [1, 1, 4],
           herb_youming: [1, 2, 7], herb_fengwei: [1, 1, 5], herb_zhuguo: [1, 1, 3],
           herb_tianxing: [1, 1, 4], ore_xingchen: [1, 2, 7],
+          herb_qingling: [1, 2, 3], herb_ningxue: [1, 2, 3], // 低级灵草偶有遗落
         },
         pill: { g3: [1, 1, 5] }, frag: { g3: [1, 1, 4] },
         eggChance: 0.07, recipeChance: 0.04,
@@ -190,6 +191,8 @@
           gem_hanyu: [1, 1, 5], gem_xinghui: [1, 1, 3],
           herb_longxu: [1, 2, 7], herb_hansui: [1, 1, 5], herb_yusui: [1, 1, 4],
           herb_wudao: [1, 1, 4], ore_longjin: [1, 1, 5],
+          herb_juling: [1, 2, 3], herb_bingxin: [1, 1, 3], // 低级灵草偶有遗落
+          ore_xuantie: [1, 2, 3], // 低级矿石偶见
         },
         pill: { g4: [1, 1, 4] }, frag: { g4: [1, 1, 3] },
         eggChance: 0.04, recipeChance: 0.05,
@@ -210,6 +213,8 @@
           gem_yanxin: [1, 1, 6], gem_xinghui: [1, 1, 3],
           herb_dihuo: [1, 2, 7], herb_leiming: [1, 1, 5], herb_taiyang: [1, 1, 4],
           ore_mingtie: [1, 1, 4],
+          herb_huolingzhi: [1, 2, 3], herb_digen: [1, 2, 3], // 低级灵草偶有遗落
+          ore_miyin: [1, 2, 3], // 低级矿石偶见
         },
         pill: { g5: [1, 1, 4] }, frag: { g5: [1, 1, 3] },
         eggChance: 0.05, recipeChance: 0.06,
@@ -230,6 +235,8 @@
           gem_mingzhu: [1, 1, 6],
           herb_xueling: [1, 2, 7], herb_taiyin: [1, 1, 5],
           ore_xingchenjin: [1, 1, 4],
+          herb_jinxian: [1, 2, 3], herb_digen: [1, 2, 3], // 低级灵草偶有遗落
+          ore_jingjin: [1, 2, 3], // 低级矿石偶见
         },
         pill: { g6: [1, 1, 4] }, frag: { g6: [1, 1, 3] },
         eggChance: 0.04, recipeChance: 0.06,
@@ -253,6 +260,8 @@
           gem_guixuyu: [1, 1, 6], gem_xinghui: [1, 2, 5],
           herb_xukong: [1, 2, 6], herb_tianxing: [1, 1, 5], herb_wudao: [1, 1, 4], herb_hundun: [1, 1, 2],
           ore_longwenjin: [1, 1, 4],
+          herb_youming: [1, 2, 3], herb_fengwei: [1, 1, 3], // 中级灵草偶有遗落
+          ore_chijing: [1, 2, 3], // 中级矿石偶见
         },
         pill: { g7: [1, 1, 4] }, frag: { g7: [1, 1, 3], g8: [1, 1, 1] },
         eggChance: 0.08, recipeChance: 0.08,
@@ -275,6 +284,8 @@
           gem_longmu: [1, 1, 5], gem_guixuyu: [1, 1, 3],
           herb_longxian: [1, 2, 6], herb_fengxue: [1, 1, 5], herb_xuanwu: [1, 1, 4],
           herb_puti: [1, 1, 3], herb_busi: [1, 1, 2],
+          herb_tianxing: [1, 2, 3], herb_dihuo: [1, 1, 3], // 中级灵草偶有遗落
+          ore_mingtie: [1, 2, 3], // 中级矿石偶见
         },
         pill: { g8: [1, 1, 4] }, frag: { g8: [1, 1, 3], g9: [1, 1, 1] },
         eggChance: 0.1, recipeChance: 0.08,
