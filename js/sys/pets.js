@@ -110,7 +110,7 @@
   /* ============================== 常量 ============================== */
   const TEAM_CAP = 3;                 // 出战上限
   const MAX_LV = 100;                 // 等级上限
-  const CONVERT = 0.2;                // 宠物属性折算玩家 flat 的比例
+  const CONVERT = 0.5;                // 宠物属性折算玩家 flat 的比例（原 0.2）
   const EXP_NEED_BASE = 80;           // 升级经验基数：need(lv)=80*lv^1.5*(1+0.25*(grade-1))
   const LV_GROWTH = 0.08;             // 每级属性成长（线性）：lvMul = 1+0.08*(lv-1)
   const SHINY_P = 0.01;               // 闪光概率
@@ -282,7 +282,7 @@
   function expNeed(lv, grade) {
     return Math.round(EXP_NEED_BASE * Math.pow(lv, 1.5) * (1 + 0.25 * (grade - 1)));
   }
-  // 宠物最终面板：base × 等级成长 × 资质倍率 ×(觉醒 1.5) ×擅长加成
+  // 宠物最终面板：base × 等级成长 × 资质倍率 ×(觉醒 1.5) ×擅长加成 ×境界倍率
   function petStats(pet) {
     const sp = bySp(pet.sp) || D().species[0];
     if (!sp) return { atk: 0, def: 0, hp: 0, spd: 0 };
@@ -290,15 +290,16 @@
     const aptMul = tierOf(pet.apt).mult;
     const aw = pet.awaken ? 1.5 : 1;
     const m = lvMul * aptMul * aw;
+    const realmMul = 1 + ((XG.state.player || {}).realmIdx || 0); // 境界倍率：后期不掉队
     const apt = sp.apt || [];
     const gong = apt.indexOf('gong') >= 0 ? 1.1 : 1;
     const shou = apt.indexOf('shou') >= 0 ? 1.1 : 1;
     const su = apt.indexOf('su') >= 0 ? 1.3 : 1;
     return {
-      atk: sp.base.atk * m * gong,
-      def: sp.base.def * m * shou,
-      hp: sp.base.hp * m * shou,
-      spd: (sp.base.atk + sp.base.def) * 0.05 * m * su,
+      atk: sp.base.atk * m * gong * realmMul,
+      def: sp.base.def * m * shou * realmMul,
+      hp: sp.base.hp * m * shou * realmMul,
+      spd: (sp.base.atk + sp.base.def) * 0.05 * m * su * realmMul,
     };
   }
   function powerOfPet(pet) {
