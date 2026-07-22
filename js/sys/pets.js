@@ -46,7 +46,7 @@
  *  bloodInfo(id)     → data 血脉行 | null
  *  tierOf(apt)       → {id,name,min,max,mult} 资质档
  *  jobDefs()         → { lt:{id,name,icon,desc}, sl:{...}, explore:{...} } 打工定义
- *  jobCap()          → 打工位上限（3 + 洞府兽栏等级/2 + 段位等级）
+ *  jobCap()          → 打工位上限（3 + 洞府兽栏等级/2 + 段位等级 + 境界等级）
  *  jobList()         → [{ uid, pet:PetView, job, jobName, icon }]
  *  ratesFor(uid)     → { herbPerH, expPerH, lingShiPerH } 该宠三种打工的小时产出（已含全部倍率）
  *  pending()         → { lingShi, mat:{matId:n} } 待领池原值（lingShi 为浮点，显示请 fmtInt）
@@ -640,7 +640,7 @@
     bloodInfo(id) { return bloodMap()[id] || null; },
     tierOf: tierOf,
     jobDefs() { return JOBS; },
-    jobCap() { return 3 + Math.floor(caveLv('sl') / 2) + pvpTierIdx(); }, // 打工位上限（基数3 + 洞府兽栏等级/2 + 段位等级）
+    jobCap() { return 3 + Math.floor(caveLv('sl') / 2) + pvpTierIdx() + (XG.state.player.realmIdx || 0); }, // 打工位上限（基数3 + 洞府兽栏等级/2 + 段位等级 + 境界等级）
     jobList() {
       const st = P(), self = this, out = [];
       for (const uid in st.jobs) {
