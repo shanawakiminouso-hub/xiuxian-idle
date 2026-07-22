@@ -104,7 +104,7 @@
       unlock: { realmIdx: 1, layer: 1 }, power: 1e3, dur: [60, 180, 600],
       drops: {
         mat: {
-          herb_lingzhi: [1, 3, 10], herb_fuling: [1, 2, 9],
+          herb_lingzhi: [1, 3, 10], herb_fuling: [1, 2, 9], herb_ningshen: [1, 2, 7], herb_ziye: [1, 2, 6],
           ore_qingtong: [1, 3, 9], ore_heite: [1, 2, 7],
           beast_huya: [1, 2, 5], beast_tuling: [1, 2, 5],
           gem_lingcui: [1, 1, 3],
@@ -124,11 +124,13 @@
       drops: {
         mat: {
           herb_fuling: [1, 3, 9], herb_huangjing: [1, 2, 8],
+          herb_juling: [1, 2, 7], herb_yuehua: [1, 2, 6],
           ore_wuxingsha: [1, 2, 8], ore_qingtong: [1, 3, 7],
           beast_shelin: [1, 2, 5], beast_xiongdan: [1, 1, 5],
           gem_zijing: [1, 1, 4],
           herb_ningshen: [1, 2, 5], herb_ziye: [1, 1, 4],
           ore_jingtie: [1, 2, 7],
+          beast_yaodan: [1, 1, 3],
         },
         pill: { g1: [1, 1, 4], g2: [1, 1, 2] }, frag: { g1: [1, 1, 3], g2: [1, 1, 1] },
         eggChance: 0.05, recipeChance: 0.04,
@@ -143,6 +145,7 @@
       drops: {
         mat: {
           herb_huangjing: [1, 3, 9], herb_renshen: [1, 2, 8],
+          herb_xuanbing: [1, 2, 6], herb_digen: [1, 2, 5],
           ore_xuantie: [1, 3, 9], ore_wuxingsha: [1, 2, 7],
           beast_shelin: [1, 2, 6], beast_xiongdan: [1, 1, 4],
           gem_biyu: [1, 1, 4],
@@ -161,6 +164,7 @@
       drops: {
         mat: {
           herb_renshen: [1, 3, 8], herb_heshouwu: [1, 2, 8],
+          herb_jinxian: [1, 2, 6], herb_longxu: [1, 1, 4],
           ore_miyin: [1, 2, 8], ore_jingjin: [1, 2, 7],
           beast_yaodan: [1, 2, 7], beast_jiaowei: [1, 2, 6],
           gem_zijing: [1, 1, 5], gem_xuepo: [1, 1, 4],
@@ -180,6 +184,7 @@
       drops: {
         mat: {
           herb_xuelian: [1, 2, 9], herb_heshouwu: [1, 2, 6],
+          herb_tianxing: [1, 2, 5], herb_dihuo: [1, 1, 4],
           ore_hantie: [1, 2, 8], ore_jingjin: [1, 2, 6],
           beast_bingjiao_lin: [1, 2, 7], beast_jiaowei: [1, 2, 5],
           gem_hanyu: [1, 1, 5], gem_xinghui: [1, 1, 3],
@@ -199,10 +204,12 @@
       drops: {
         mat: {
           herb_chiyancao: [1, 2, 8], herb_longxiancao: [1, 1, 5],
+          herb_xueling: [1, 2, 5], herb_taiyin: [1, 1, 4],
           ore_chijing: [1, 3, 9], ore_jingjin: [2, 3, 7],
           beast_yanlang_gu: [1, 2, 8],
           gem_yanxin: [1, 1, 6], gem_xinghui: [1, 1, 3],
           herb_dihuo: [1, 2, 7], herb_leiming: [1, 1, 5], herb_taiyang: [1, 1, 4],
+          ore_mingtie: [1, 1, 4],
         },
         pill: { g5: [1, 1, 4] }, frag: { g5: [1, 1, 3] },
         eggChance: 0.05, recipeChance: 0.06,
@@ -217,10 +224,12 @@
       drops: {
         mat: {
           herb_hunyuancao: [1, 2, 7], herb_longxiancao: [1, 2, 5],
+          herb_xukong: [1, 1, 5], herb_wudao: [1, 1, 4],
           ore_mingtie: [1, 3, 9], ore_chijing: [1, 2, 5],
           beast_mingdie_yi: [1, 2, 8], beast_yaodan: [1, 3, 6],
           gem_mingzhu: [1, 1, 6],
           herb_xueling: [1, 2, 7], herb_taiyin: [1, 1, 5],
+          ore_xingchenjin: [1, 1, 4],
         },
         pill: { g6: [1, 1, 4] }, frag: { g6: [1, 1, 3] },
         eggChance: 0.04, recipeChance: 0.06,
@@ -238,10 +247,12 @@
       drops: {
         mat: {
           herb_hunyuancao: [1, 3, 8], herb_longxiancao: [1, 2, 6],
+          herb_fengxue: [1, 1, 5], herb_xuanwu: [1, 1, 4],
           ore_xingchenjin: [1, 2, 9], ore_mingtie: [1, 2, 5],
           beast_kun_yu: [1, 2, 8],
           gem_guixuyu: [1, 1, 6], gem_xinghui: [1, 2, 5],
           herb_xukong: [1, 2, 6], herb_tianxing: [1, 1, 5], herb_wudao: [1, 1, 4], herb_hundun: [1, 1, 2],
+          ore_longwenjin: [1, 1, 4],
         },
         pill: { g7: [1, 1, 4] }, frag: { g7: [1, 1, 3], g8: [1, 1, 1] },
         eggChance: 0.08, recipeChance: 0.08,
@@ -258,6 +269,7 @@
       drops: {
         mat: {
           herb_hunyuancao: [2, 3, 7],
+          herb_zhuguo: [1, 2, 5], herb_hundun: [1, 1, 3],
           ore_longwenjin: [1, 2, 9], ore_xingchenjin: [1, 2, 6], ore_hundunjin: [1, 1, 3],
           beast_longlin: [1, 2, 8], beast_longgu: [1, 2, 7], beast_longjiao: [1, 1, 5],
           gem_longmu: [1, 1, 5], gem_guixuyu: [1, 1, 3],
