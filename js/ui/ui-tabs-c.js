@@ -387,10 +387,10 @@
     if (!body) return;
     const fs = sys('fellows');
     if (!fs) { body.innerHTML = lockHtml('坊市系统尚未载入。'); return; }
-    if (!unlocked('market')) { body.innerHTML = lockHtml('坊市：金丹 1 层解锁。'); return; }
+    if (!unlocked('market')) { body.innerHTML = lockHtml('坊市：筑基 5 层解锁。'); return; }
     let m = null;
     try { m = fs.market(); } catch (e) { m = null; }
-    if (!m || !m.unlocked) { body.innerHTML = lockHtml('坊市未开，金丹 1 层后再来。'); return; }
+    if (!m || !m.unlocked) { body.innerHTML = lockHtml('坊市未开，筑基 5 层后再来。'); return; }
 
     const lingYu = (XG.state && XG.state.res && XG.state.res.lingYu) || 0;
     let html = '<div class="card"><div class="row" style="justify-content:space-between">'

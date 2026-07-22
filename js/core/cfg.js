@@ -61,7 +61,7 @@
       cave:          { realmIdx: 1, layer: 1 },  // 洞府：筑基1层
       expedition:    { realmIdx: 1, layer: 1 },  // 历练派遣：筑基1层
       alchemy:       { realmIdx: 1, layer: 5 },  // 炼丹：筑基5层
-      market:        { realmIdx: 2, layer: 1 },  // 坊市：金丹1层
+      market:        { realmIdx: 1, layer: 5 },  // 坊市：筑基5层（体验迭代：由金丹1层提前，缓解筑基期灵石/灵玉无处可花）
       forge:         { realmIdx: 2, layer: 1 },  // 炼器：金丹1层
       dungeon_tower: { realmIdx: 2, layer: 1 },  // 爬塔：金丹1层
       pvp:           { realmIdx: 2, layer: 5 },  // 论剑：金丹5层

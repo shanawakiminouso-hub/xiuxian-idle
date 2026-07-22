@@ -109,11 +109,12 @@
 
 ## 二、最终权威 id 速查表
 
-### 2.1 地图 id（8 个，以 world.js 为准）
+### 2.1 地图 id（9 个，以 world.js 为准）
 
 | id | 名称 | unlock | hidden | 进入 cond | 特产 sp | 专属事件 |
 |---|---|---|---|---|---|---|
 | qingyun | 青云山 | 筑基1层（realmIdx 1） | 否 | — | sp_qingyun_tea | evb_qingyun_01~03 |
+| luoxia | 落霞谷 | 筑基6层 | 否 | — | sp_luoxia_jing | evb_luoxia_01~03 |
 | cangwu | 苍梧之野 | 金丹1层 | 否 | — | sp_cangwu_wood | evb_cangwu_01~03 |
 | wanyao | 万妖岭 | 元婴1层 | 否 | — | sp_yaoling_guo | evb_wanyao_01~03 |
 | beihai | 北海冰原 | 化神1层 | 否 | — | sp_beihai_sui | evb_beihai_01~03 |
@@ -191,9 +192,9 @@
   - `ore_xuantie` 由 world.js 与 equips.js 双登记（同名同 grade 1，描述略异；后加载者覆盖，数值无冲突）。
   - `gem_zijing`：world.js 登记为 g1 宝石材料；equips.js 的镶嵌宝石基座同名，背包实例为 `gem_zijing_1..5`（equips 已登记该 5 个等级 id），命名空间复用但不冲突。
 
-### 2.4 事件触发器与 cond 实际使用值（98 条事件：eva×52 + evb×46）
+### 2.4 事件触发器与 cond 实际使用值（101 条事件：eva×52 + evb×49）
 
-**trigger（契约三值，全部在用）**：`cultivate`×15、`any`×48、`explore`×35。
+**trigger（契约三值，全部在用）**：`cultivate`×15、`any`×48、`explore`×38。
 
 **cond（契约九值，全部在用）**：
 
@@ -223,5 +224,5 @@
 
 - out.pill 实际使用：`pill_juqi`、`pill_qingdu`。
 - out.frag 实际使用：`gf_qingxin`、`gf_wanjian`、`gf_taixuan`、`gf_zixiao`、`gf_xuanbing`、`gf_longxiang`、`gf_cangling`、`gf_xuanyuan`、`gf_guixu`（9 个，全部存在于 gongfa.js）。
-- out.mat 实际使用 22 种材料 id，全部存在于 `XG.data.mats`（主登记：world.js=ore/gem/beast/sp + 9 种 herb 保底，pills.js=herb_*，pets.js=6 种 beast_* 进化材，equips.js=强化矿 + 镶嵌宝石等级 id）。
+- out.mat 实际使用 25 种材料 id，全部存在于 `XG.data.mats`（主登记：world.js=ore/gem/beast/sp + 9 种 herb 保底，pills.js=herb_*，pets.js=6 种 beast_* 进化材，equips.js=强化矿 + 镶嵌宝石等级 id）。
 - 连锁组（≥6）：merchant×3、ruhuo×2、古洞遗府×3、灵狐报恩×3、鲛人×2（evb_youming_03→04）、轩辕剑冢×4（eva_jianmeng 起）、龙渊×4（eva_longyin 起）、归墟×4（eva_guijia 起）——共 8 组；含 hiddenEnd 的终点 6 处（merchant_3 / eva_yifu / eva_baihu_3 / evb_xuanyuan_3 / evb_longyuan_3 / evb_gui_xu_3）。

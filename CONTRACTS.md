@@ -121,7 +121,7 @@ XG.cfg.SAVE_KEY = 'xg_save_v1';
 - 玩家/道友境界统一表示：`{ realmIdx: 0..9, layer: 1..10 }`。
 - 系统解锁（`XG.cfg.UNLOCKS`，key=系统 id，value={realmIdx, layer} 或 {days:N}）：
   - `gongfa` 炼气1层；`adventure` 炼气2层；`fellows` 炼气3层（提前，让传闻流尽早热闹）；`pets` 炼气5层；
-  - `cave` 筑基1层；`expedition` 筑基1层；`alchemy` 筑基5层；`market` 金丹1层（坊市）；
+  - `cave` 筑基1层；`expedition` 筑基1层；`alchemy` 筑基5层；`market` 筑基5层（坊市）；
   - `forge` 金丹1层；`dungeon_tower` 金丹1层；`pvp` 金丹5层；`petBreed` 元婴1层；
   - `gongfaCreate` 化神1层（自创功法）；`dungeon_guard` 化神1层；`dungeon_hunt` 炼虚1层（限时寻宝）；
   - `hiddenMaps` 炼虚1层（隐藏区域提示）；`tribulation` 大乘1层（渡劫预告）；`reincarn` 渡劫10层。
@@ -244,7 +244,7 @@ XG.offline.settle()            // 启动时调用：dt=min(now-lastSeen, cap)；
 - 强化/升星成本公式写在 `XG.data.equips.formula = {enhanceCost(lv), starCost(star), maxStar:10, maxEnh:…}`（函数）。
 
 ### 9.6 `data/world.js` —— `XG.data.world = { maps:[≥8], dungeons:{…}, marketRules:{…} }`
-- `maps`：`{id, name, icon, unlock:{realmIdx,layer}, hidden:bool(≥2), power:建议战力, dur:派遣时长档[1h,4h,8h], drops:{mat:{id:[min,max],w}, pill?, frag?, eggChance, recipeChance}, sp:'sp_* 特产id', events:['地图专属事件id…≥3'], desc}`；≥8 张（6 普通+2 隐藏：归墟/龙渊，隐藏图进入条件写在 `cond`，由 expedition 判定）。
+- `maps`：`{id, name, icon, unlock:{realmIdx,layer}, hidden:bool(≥2), power:建议战力, dur:派遣时长档[15分,1时,4时], drops:{mat:{id:[min,max],w}, pill?, frag?, eggChance, recipeChance}, sp:'sp_* 特产id', events:['地图专属事件id…≥3'], desc}`；≥8 张（现 9 张：7 普通+2 隐藏：归墟/龙渊，隐藏图进入条件写在 `cond`，由 expedition 判定）。
 - `dungeons`：`{ tower:{affixPool:[≥12 词缀 {id,name,eff,desc}], hiddenBossEvery:33, rewards(layer)→公式注释}, guard:{waves:[…≥10 档]}, hunt:{dur:300, pools:[…]} }`。
 - `marketRules`：坊市 `{refreshSec:7200, slots:6, priceByPersona:{…奸商×1.3/挚友×0.8…}, stock:{…生成规则注释}}`。
 

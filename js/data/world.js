@@ -6,7 +6,7 @@
   XG.data.mats = XG.data.mats || {};
 
   /* ==================== 材料登记（并入 XG.data.mats） ====================
-   * 本文件负责登记：ore_*（矿石 12 种）、gem_*（宝石 10 种）、beast_*（妖兽材料 13 种）、sp_*（地图特产 8 种）。
+   * 本文件负责登记：ore_*（矿石 12 种）、gem_*（宝石 10 种）、beast_*（妖兽材料 13 种）、sp_*（地图特产 9 种）。
    * herb_* 由炼丹批次（pills.js）主登记；此处仅对本图掉落引用到的 9 种 herb 做「保底登记」：
    *   一律「存在则不覆盖」，绝不改写他人条目，保证与炼丹批次不冲突。
    * grade 口径（材料表自定义）：0 凡 / 1 灵 / 2 宝 / 3 仙 / 4 神。
@@ -64,8 +64,9 @@
     beast_longgu:      { name: '龙骨',     icon: '骸', grade: 4, desc: '龙骸之骨，历经万劫而不腐，沉重如山。' },
     beast_longjiao:    { name: '龙角',     icon: '角', grade: 4, desc: '龙角峥嵘，蕴一丝真龙威压，镇邪辟易。' },
 
-    /* ---- sp_* 地图特产（8 种，每图一种，本文件主登记） ---- */
+    /* ---- sp_* 地图特产（9 种，每图一种，本文件主登记） ---- */
     sp_qingyun_tea:  { name: '青云云雾茶', icon: '茶', grade: 1, desc: '青云之巅云雾滋养的灵茶，一盏清心明目，赠友最宜。' },
+    sp_luoxia_jing:  { name: '落霞晶',     icon: '霞', grade: 1, desc: '落霞谷暮色所凝的晶簇，握之如掬一抹残霞，佩之安神定魄。' },
     sp_cangwu_wood:  { name: '苍梧灵木',   icon: '木', grade: 1, desc: '苍梧古木之心，纹理天然成阵，炼器造屋皆为良材。' },
     sp_yaoling_guo:  { name: '妖灵果',     icon: '果', grade: 2, desc: '万妖岭深处异果，妖气氤氲，灵宠食之助长灵性。' },
     sp_beihai_sui:   { name: '玄冰髓',     icon: '髓', grade: 2, desc: '玄冰万载凝出的一点冰髓，降火定丹有奇效。' },
@@ -87,9 +88,10 @@
    *   mat：{ 材料id: [数量下限, 数量上限, 权重] }；
    *   pill / frag：{ 'g1'~'g9': [数量下限, 数量上限, 权重] } —— 按品阶掉「随机成品丹 / 随机功法残篇」，
    *     品阶池分别见 pills.js / gongfa.js，故本文件不直接引用其 id，避免跨批次悬空引用。
-   *   结算规则（注释）：按权重抽取 3/4/5 种（时长档 1h/4h/8h），每种数量在上下限间取整，
-   *     再乘时长系数 ×1 / ×3.2 / ×6；sp 特产每次派遣必得 1 件（8h 档 2 件）；
-   *     eggChance / recipeChance 为每次派遣独立判定的概率（灵宠蛋 / 随机丹方）。
+   *   结算规则（注释）：按权重抽取 3/4/5 种（时长档 15分/1时/4时），每种数量在上下限间取整，
+   *     再乘时长系数 ×1 / ×3.2 / ×6；sp 特产：短途档 40% 得 1 件、中途档必得 1 件、远游档必得 2 件；
+   *     eggChance / recipeChance 为每次派遣独立判定的概率（灵宠蛋 / 随机丹方），
+   *     结算时按 min(1, 时长/1h) 缩放（短途 ×0.25），时产口径与旧 1h 档一致。
    *   power 为建议战力：参照 cfg.REALM_BASE 战力基值（金丹≈5.5e3，每大境界×6）×约 1.5 设定。
    * events：各地图专属事件 id 为「预留位」（evb_<mapId>_01~03，每图 3 条），
    *   由 events_b 批次按 id + mapId 落地实现；未实现前 expedition 可安全跳过。
@@ -97,7 +99,7 @@
   const maps = [
     {
       id: 'qingyun', name: '青云山', icon: '⛰️', hidden: false,
-      unlock: { realmIdx: 1, layer: 1 }, power: 1e3, dur: [3600, 14400, 28800],
+      unlock: { realmIdx: 1, layer: 1 }, power: 1e3, dur: [900, 3600, 14400],
       drops: {
         mat: {
           herb_lingzhi: [1, 3, 10], herb_fuling: [1, 2, 9],
@@ -113,8 +115,25 @@
       desc: '钟灵毓秀之仙山，云雾缭绕，灵草遍地，乃散修初窥门径的好去处。',
     },
     {
+      id: 'luoxia', name: '落霞谷', icon: '🌄', hidden: false,
+      unlock: { realmIdx: 1, layer: 6 }, power: 3e3, dur: [900, 3600, 14400],
+      drops: {
+        mat: {
+          herb_fuling: [1, 3, 9], herb_huangjing: [1, 2, 8],
+          ore_wuxingsha: [1, 2, 8], ore_qingtong: [1, 3, 7],
+          beast_shelin: [1, 2, 5], beast_xiongdan: [1, 1, 5],
+          gem_zijing: [1, 1, 4],
+        },
+        pill: { g1: [1, 1, 4], g2: [1, 1, 2] }, frag: { g1: [1, 1, 3], g2: [1, 1, 1] },
+        eggChance: 0.05, recipeChance: 0.04,
+      },
+      sp: 'sp_luoxia_jing',
+      events: ['evb_luoxia_01', 'evb_luoxia_02', 'evb_luoxia_03'],
+      desc: '日落时分霞光满谷，紫晶与灵草并生，熊罴青蟒偶有出没，筑基中方可一探。',
+    },
+    {
       id: 'cangwu', name: '苍梧之野', icon: '🌳', hidden: false,
-      unlock: { realmIdx: 2, layer: 1 }, power: 8e3, dur: [3600, 14400, 28800],
+      unlock: { realmIdx: 2, layer: 1 }, power: 8e3, dur: [900, 3600, 14400],
       drops: {
         mat: {
           herb_huangjing: [1, 3, 9], herb_renshen: [1, 2, 8],
@@ -131,7 +150,7 @@
     },
     {
       id: 'wanyao', name: '万妖岭', icon: '🐍', hidden: false,
-      unlock: { realmIdx: 3, layer: 1 }, power: 5e4, dur: [3600, 14400, 28800],
+      unlock: { realmIdx: 3, layer: 1 }, power: 5e4, dur: [900, 3600, 14400],
       drops: {
         mat: {
           herb_renshen: [1, 3, 8], herb_heshouwu: [1, 2, 8],
@@ -148,7 +167,7 @@
     },
     {
       id: 'beihai', name: '北海冰原', icon: '🧊', hidden: false,
-      unlock: { realmIdx: 4, layer: 1 }, power: 3e5, dur: [3600, 14400, 28800],
+      unlock: { realmIdx: 4, layer: 1 }, power: 3e5, dur: [900, 3600, 14400],
       drops: {
         mat: {
           herb_xuelian: [1, 2, 9], herb_heshouwu: [1, 2, 6],
@@ -165,7 +184,7 @@
     },
     {
       id: 'fentian', name: '焚天谷', icon: '🔥', hidden: false,
-      unlock: { realmIdx: 5, layer: 1 }, power: 1.8e6, dur: [3600, 14400, 28800],
+      unlock: { realmIdx: 5, layer: 1 }, power: 1.8e6, dur: [900, 3600, 14400],
       drops: {
         mat: {
           herb_chiyancao: [1, 2, 8], herb_longxiancao: [1, 1, 5],
@@ -182,7 +201,7 @@
     },
     {
       id: 'youming', name: '幽冥涧', icon: '🌑', hidden: false,
-      unlock: { realmIdx: 6, layer: 1 }, power: 1.1e7, dur: [3600, 14400, 28800],
+      unlock: { realmIdx: 6, layer: 1 }, power: 1.1e7, dur: [900, 3600, 14400],
       drops: {
         mat: {
           herb_hunyuancao: [1, 2, 7], herb_longxiancao: [1, 2, 5],
@@ -200,7 +219,7 @@
     /* ---- 隐藏地图（hiddenMaps 系统提示：炼虚1层；实际进入须满足 cond，由 expedition 判定） ---- */
     {
       id: 'guixu', name: '归墟', icon: '🌊', hidden: true,
-      unlock: { realmIdx: 7, layer: 1 }, power: 6.5e7, dur: [3600, 14400, 28800],
+      unlock: { realmIdx: 7, layer: 1 }, power: 6.5e7, dur: [900, 3600, 14400],
       cond: 'youming_exp_30',
       condText: '于幽冥涧派遣累计满三十次，且臻大乘之境；夜半潮落时，归墟路口自现。',
       drops: {
@@ -219,7 +238,7 @@
     },
     {
       id: 'longyuan', name: '龙渊', icon: '🐉', hidden: true,
-      unlock: { realmIdx: 8, layer: 1 }, power: 4e8, dur: [3600, 14400, 28800],
+      unlock: { realmIdx: 8, layer: 1 }, power: 4e8, dur: [900, 3600, 14400],
       cond: 'guixu_bi_5',
       condText: '集「归墟残璧」五枚，于归墟深处祭坛献祭，渡劫之境方启龙渊之门。',
       drops: {
@@ -319,7 +338,7 @@
     },
   };
 
-  /* ==================== 坊市规则（金丹1层开启） ==================== */
+  /* ==================== 坊市规则（筑基5层开启） ==================== */
   const marketRules = {
     refreshSec: 7200, // 每 7200 秒（两个时辰）自动刷新；耗灵玉 5 可立即刷新
     slots: 6,         // 6 栏货位

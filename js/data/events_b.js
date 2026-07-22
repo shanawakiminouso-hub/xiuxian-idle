@@ -1,11 +1,11 @@
-/* 文件名：events_b.js —— 奇遇事件池 B：8 张历练地图专属事件 / 隐藏连锁 / 彩蛋 */
+/* 文件名：events_b.js —— 奇遇事件池 B：9 张历练地图专属事件 / 隐藏连锁 / 彩蛋 */
 /*
  * 口径说明（与其他 data 文件并行开发，联调时以此对齐）：
- * 1. 地图 id 一律以 world.js 为准：qingyun 青云山 / cangwu 苍梧之野 / wanyao 万妖岭 /
+ * 1. 地图 id 一律以 world.js 为准：qingyun 青云山 / luoxia 落霞谷 / cangwu 苍梧之野 / wanyao 万妖岭 /
  *    beihai 北海冰原 / fentian 焚天谷 / youming 幽冥涧 / guixu 归墟(隐藏) / longyuan 龙渊(隐藏)。
  *    各地图专属事件按 world.js 预留位落地：evb_<mapId>_01~03（连锁续章追加 _04）。
  * 2. 材料 id 一律用契约 §6 命名空间并以 world.js 登记为准：地图特产
- *    sp_qingyun_tea / sp_cangwu_wood / sp_yaoling_guo / sp_beihai_sui /
+ *    sp_qingyun_tea / sp_luoxia_jing / sp_cangwu_wood / sp_yaoling_guo / sp_beihai_sui /
  *    sp_fentian_huo / sp_youming_hua / sp_guixu_bi / sp_longyuan_lin；
  *    灵草 herb_lingzhi；矿石 ore_xuantie/ore_hantie/ore_chijing；宝石 gem_mingzhu/gem_xinghui；
  *    妖兽材料 beast_yaodan/beast_gu/beast_longlin。
@@ -53,6 +53,37 @@
       choices: [
         { text: '赠以干粮谢之（-200灵石）', req: { lingShi: 200 }, out: { cult: 3.6e4, news: '一饭之恩，老樵指点你寻得一处灵穴。' } },
         { text: '谢过自行探寻', out: { cult: 1.5e4 } },
+      ],
+    },
+    // ==================== 落霞谷（筑基，rate 40） ====================
+    {
+      id: 'evb_luoxia_01', title: '霞光淬体', icon: '🌅', w: 12, once: false, hidden: false,
+      trigger: 'explore', mapId: 'luoxia', minRealm: 1,
+      text: '暮色四合，漫天霞光如瀑垂落谷底，照得人通体舒泰，经脉中灵气自行加速流转。',
+      choices: [
+        { text: '沐霞打坐', out: { cult: 1.44e5, news: '你于落霞谷沐霞修行，霞光淬体，道行精进。' } },
+        { text: '采撷霞晶', out: { mat: { sp_luoxia_jing: 2 } } },
+        { text: '静观霞散', out: { cult: 6e4, lingYu: 1 } },
+      ],
+    },
+    {
+      id: 'evb_luoxia_02', title: '谷底熊罴', icon: '🐻', w: 10, once: false, hidden: false,
+      trigger: 'explore', mapId: 'luoxia', minRealm: 1,
+      text: '一头熊罴人立而吼，守着石壁下一株百年黄精，见你靠近，涎水直流，寸步不让。',
+      choices: [
+        { text: '正面搏杀', out: { cult: 1.44e5, mat: { beast_xiongdan: 1 } } },
+        { text: '声东击西盗药', out: { cult: 2.4e4, mat: { herb_huangjing: 2 } } },
+        { text: '绕道而行', out: { cult: 1.2e4 } },
+      ],
+    },
+    {
+      id: 'evb_luoxia_03', title: '紫晶矿脉', icon: '⛏️', w: 9, once: false, hidden: false,
+      trigger: 'explore', mapId: 'luoxia', minRealm: 1,
+      text: '断崖之下裸露出一截紫晶矿脉，霞光一照，晶簇内雷光隐隐，成色极佳。',
+      choices: [
+        { text: '全力开采', out: { mat: { gem_zijing: 2 } } },
+        { text: '雇矿工分账（-800灵石）', req: { lingShi: 800 }, out: { lingShi: 2.4e3, mat: { gem_zijing: 1 }, news: '你雇矿工开采紫晶，分账之余还小赚一笔。' } },
+        { text: '记下图志离去', out: { cult: 2.4e4 } },
       ],
     },
     // ==================== 苍梧之野（筑基，rate 40） ====================

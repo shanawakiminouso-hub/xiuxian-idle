@@ -535,7 +535,7 @@
     }
   }
 
-  /* ---------------- 坊市（金丹解锁，2 时辰刷新 6 栏） ---------------- */
+  /* ---------------- 坊市（筑基5层解锁，2 时辰刷新 6 栏） ---------------- */
   function marketRules() { return (XG.data.world && XG.data.world.marketRules) || { refreshSec: 7200, slots: 6, priceByPersona: {}, priceByRelation: {}, stock: { kindW: {}, basePrice: {}, currencyW: {} } }; }
   function marketSt() {
     const st = S();
@@ -563,11 +563,13 @@
     for (let i = 0; i < (mr.slots || 6); i++) {
       const seller = u.pick(fs);
       const persona = personaOf(seller);
-      const kind = u.weighted([
+      let kind = u.weighted([
         { k: 'pill', w: mr.stock.kindW.pill || 30 }, { k: 'mat', w: mr.stock.kindW.mat || 30 },
         { k: 'equip', w: mr.stock.kindW.equip || 20 }, { k: 'frag', w: mr.stock.kindW.frag || 15 },
         { k: 'egg', w: mr.stock.kindW.egg || 5 },
       ], 'w').k;
+      // 炼器未开（坊市已提前至筑基5层）时不挂装备栏，降级为材料，免玩家买到只能折矿的货
+      if (kind === 'equip' && !(XG.cfg && XG.cfg.isUnlocked && XG.cfg.isUnlocked('forge'))) kind = 'mat';
       let slot = { sid: u.uid(), uid: seller.uid, kind: kind, n: 1, sold: false, grade: 0, id: '', baseId: '' };
 
       if (kind === 'pill') {
@@ -671,7 +673,7 @@
         ensureFellows();
         marketSt();
         S().fellowWeek = S().fellowWeek || { wid: U().weekId(), player: 0, rivals: {} };
-        rollDailyHelp();
+        dailyHelp(); // 仅跨天/缺档才重摇（曾误用 rollDailyHelp：每次加载都清空重摇，致「有求于你」传闻与求助列表脱节）
         if (marketUnlocked() && !marketSt().slots.length) genMarket(Date.now());
         subscribe();
       } catch (e) {
@@ -912,7 +914,7 @@
     },
 
     buyMarket(sid) {
-      if (!marketUnlocked()) return { ok: false, msg: '坊市尚未开启（金丹1层解锁）。' };
+      if (!marketUnlocked()) return { ok: false, msg: '坊市尚未开启（筑基5层解锁）。' };
       const st = marketSt();
       let slot = null;
       for (const s of st.slots) if (s.sid === sid) { slot = s; break; }
@@ -952,7 +954,7 @@
 
     // 灵玉×5 立即刷新
     refreshMarket() {
-      if (!marketUnlocked()) return { ok: false, msg: '坊市尚未开启（金丹1层解锁）。' };
+      if (!marketUnlocked()) return { ok: false, msg: '坊市尚未开启（筑基5层解锁）。' };
       if (!XG.hasRes({ lingYu: MARKET_MANUAL_COST })) return { ok: false, msg: '灵玉不足（需×' + MARKET_MANUAL_COST + '）。' };
       XG.addRes({ lingYu: -MARKET_MANUAL_COST });
       genMarket(Date.now());
