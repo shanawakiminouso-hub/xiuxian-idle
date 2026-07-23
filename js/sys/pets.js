@@ -12,7 +12,7 @@
  *    进化（达 evo.lv + 耗 evo.item 材料，属性随新物种 base 暴涨，换 species 名/icon）；
  *    血脉觉醒（纯度出生 roll 20~100，凡血恒 0；≥60 耗材料觉醒：全属性 +50% + 解锁 bloods[].skill 隐藏技）。
  *  · 繁殖（cfg.UNLOCKS.petBreed，元婴1层）：两只 ≥lv30 耗灵石（异性不论），后代物种随父母一方、
- *    资质继承均值±20、血脉纯度取高±10、2% 异变出饕餮；双亲各 24h 冷却。
+ *    资质继承均值+0~20（不低于父母较低者）、血脉纯度取高+0~10、2% 异变出饕餮；双亲各 30min 冷却。
  *  · 出战：team≤3；宠物最终属性 ×0.2（CONVERT）折算 atkFlat/defFlat/hpFlat/spdFlat 进 getMods，
  *    再乘性格 fightPct；buff 技能 pct 原样并入；cai 擅长出战每只 +3 dropPct；
  *    3 宠同血脉（非泛血）触发【血脉共鸣】atkPct+5/defPct+5。
@@ -868,10 +868,10 @@
       const childSp = mutated ? 'pet_taotie' : (U().chance(0.5) ? a.sp : b.sp);
       const child = makePet(childSp, 'breed');
       if (!child) return { ok: false, msg: '繁衍失败，灵韵消散。' };
-      if (!mutated) { // 异变保持野性 roll；正常后代按继承公式
-        child.apt = U().clamp(Math.round((a.apt + b.apt) / 2) + U().randInt(-20, 20), 1, 100);
+      if (!mutated) { // 异变保持野性 roll；正常后代按继承公式（后代不比父母差）
+        child.apt = U().clamp(Math.round((a.apt + b.apt) / 2 + U().randInt(0, 20)), Math.min(a.apt, b.apt), 100);
         const sp = bySp(childSp);
-        child.purity = sp.blood === 'fan' ? 0 : U().clamp(Math.max(a.purity || 0, b.purity || 0) + U().randInt(-10, 10), 1, 100);
+        child.purity = sp.blood === 'fan' ? 0 : U().clamp(Math.max(a.purity || 0, b.purity || 0) + U().randInt(0, 10), 1, 100);
       }
       addStat('pet_breed');
       onObtain(child);
