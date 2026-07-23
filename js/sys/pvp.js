@@ -504,10 +504,12 @@
       if (p.auto !== null) {
         p.auto.cd = (p.auto.cd || 0) - dt;
         if (p.auto.cd <= 0) {
-          p.auto.cd = 3; // 连战间隔 3 秒
+          p.auto.cd = 3;
           try {
             const r = this.fight();
-            if (r && r.ok) XG.bus.emit('pvp:result', { win: r.win, pts: r.pts, delta: r.delta });
+            if (r && r.ok) {
+              XG.bus.emit('pvp:result', { win: r.win, pts: r.pts, delta: r.delta, opp: r.opp, streak: r.streak, tier: r.tier });
+            }
           } catch (e) { /* 容错 */ }
         }
       }

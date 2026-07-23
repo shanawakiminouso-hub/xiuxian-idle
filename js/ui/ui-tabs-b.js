@@ -1183,6 +1183,16 @@
         } catch (e) { toast('操作失败，请重试'); }
       };
       el.addEventListener('click', pv.handler);
+      // 自动连战结果刷新
+      pv._resHandler = function (data) {
+        if (!pv.el) return;
+        pv.lastRes = data;
+        pv.opp = null;
+        // 播一条简短 toast
+        toast((data.win ? '胜' : '负') + ' ' + (data.opp ? data.opp.name : '') + '，积分 ' + (data.delta >= 0 ? '+' : '') + data.delta);
+        renderPvpAll();
+      };
+      XG.bus.on('pvp:result', pv._resHandler);
       renderPvpAll();
     },
     update() {
@@ -1195,6 +1205,7 @@
       clearPvTimers();
       pv.busy = false;
       if (pv.el && pv.handler) pv.el.removeEventListener('click', pv.handler);
+      if (pv._resHandler) { XG.bus.off('pvp:result', pv._resHandler); pv._resHandler = null; }
       pv.el = null; pv.handler = null; pv.opp = null;
     },
   };
