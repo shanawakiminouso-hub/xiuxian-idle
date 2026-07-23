@@ -108,6 +108,7 @@
     if (!Array.isArray(p.pending)) p.pending = [];       // 赛季待补领 [{season,tierId,tierName,lingYu,frags,t}]
     if (typeof p.streak !== 'number') p.streak = 0;      // 当前连胜
     if (typeof p.school !== 'string' || !COUNTER[p.school]) p.school = ''; // 论剑流派（'' 待推导）
+    if (p.auto === undefined) p.auto = null; // 自动连战：null=关闭，{cd}=开启+冷却秒数
     return p;
   }
 
@@ -496,8 +497,21 @@
       checkSeason();
     },
 
-    // 每秒：跨周检测（代价极低，weekId 纯计算）
-    tick(dt) { checkSeason(); },
+    // 每秒：周期结算 + 自动连战
+    tick(dt) {
+      checkSeason();
+      const p = st();
+      if (p.auto !== null) {
+        p.auto.cd = (p.auto.cd || 0) - dt;
+        if (p.auto.cd <= 0) {
+          p.auto.cd = 3; // 连战间隔 3 秒
+          try {
+            const r = this.fight();
+            if (r && r.ok) XG.bus.emit('pvp:result', { win: r.win, pts: r.pts, delta: r.delta });
+          } catch (e) { /* 容错 */ }
+        }
+      }
+    },
 
     // 离线：补做赛季结算；有新待补领奖励时并入离线报告
     offline(dt) {
@@ -522,6 +536,9 @@
     setSchool: setSchool,
     getTiers: getTiers,
     fellowPower: fellowPower,
+    // 自动连战
+    setAuto(on) { const p = st(); p.auto = on ? { cd: 0 } : null; XG.bus.emit('save:dirty'); },
+    getAuto() { const a = st().auto; return a !== null; },
   };
   XG.sysOrder.push('pvp');
 })();

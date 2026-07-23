@@ -915,7 +915,7 @@
   /* ================================================================
    * Tab 4：斗法（sysId 'pvp'）
    * ================================================================ */
-  const pv = { el: null, handler: null, opp: null, busy: false, timers: [], lastRes: null };
+  const pv = { el: null, handler: null, opp: null, busy: false, timers: [], lastRes: null, auto: false, mySchool: '' };
   const TIER_ICONS = { qingtong: '🥉', baiyin: '🥈', huangjin: '🥇', bojin: '💠', zuanshi: '💎', xianzun: '👑' };
   const COUNTER = { jian: 'fu', fu: 'zhen', zhen: 'dan', dan: 'ti', ti: 'jian' }; // 与 pvp.js 克制环一致
   const SCHOOL_ORDER = ['jian', 'fu', 'zhen', 'dan', 'ti'];
@@ -993,6 +993,9 @@
     } else if (!pv.opp) {
       h = '<div class="tbb-rowline"><span class="muted">匹配战力相近之道友，三局两胜定高下。</span><span class="tbb-sp"></span>'
         + '<button class="btn btn-primary" data-act="pvp-match">寻敌论剑</button></div>'
+        + '<div class="tbb-rowline" style="margin-top:4px">'
+        + '<button class="btn tbb-mini' + (pv.auto ? ' btn-primary' : '') + '" data-act="pvp-auto">⚔ 连战：' + (pv.auto ? '开' : '关') + '</button>'
+        + '</div>'
         + (pv.lastRes ? pvpLastResHtml() : '');
     } else {
       const o = pv.opp;
@@ -1136,6 +1139,7 @@
       injectStyle();
       pv.el = el;
       pv.opp = null; pv.busy = false; pv.lastRes = null;
+      try { const s2 = pvpSys(); if (s2 && typeof s2.getAuto === 'function') pv.auto = s2.getAuto(); } catch (e) { pv.auto = false; }
       el.innerHTML = '<div class="tab-page"><h2>斗法 · 论剑</h2>'
         + '<div class="card" id="tbb-pvp-top"></div>'
         + '<div class="card"><h3 class="card-title">论剑台</h3><div id="tbb-pvp-match"></div></div>'
@@ -1170,6 +1174,10 @@
             if (!r || !r.ok) { toast((r && r.reason) || '无可补领'); return; }
             toast('补领 ' + r.count + ' 期周期赏：灵玉 ' + r.lingYu + '、残篇若干');
             pop('灵玉 +' + r.lingYu, 'pop-good');
+            renderPvpAll();
+          } else if (act === 'pvp-auto') {
+            if (typeof s.setAuto === 'function') { pv.auto = !pv.auto; s.setAuto(pv.auto); }
+            toast(pv.auto ? '自动连战已开启，每 3 秒一战。' : '自动连战已停止。');
             renderPvpAll();
           }
         } catch (e) { toast('操作失败，请重试'); }
