@@ -119,7 +119,7 @@
   const BREED_COST = 1e5;             // 繁殖灵石消耗
   const BREED_CD_MS = 1800000;        // 繁殖双亲冷却 30min（原 4h）
   const BREED_CD_H = 0.5;
-  const BREED_MUT_P = 0.02;           // 异变饕餮概率
+  const BREED_MUT_P = 0.30;           // 异变饕餮概率（原 2%）
   const BREED_LV = 20;                // 繁殖等级门槛（原 30）
   const AWAKEN_COST = { lingShi: 5e4, mat: { beast_dan: 5, beast_jingxue: 1 } }; // 觉醒消耗
   const AWAKEN_PURITY = 60;           // 觉醒纯度门槛（与 data awaken.purityNeed 一致）
