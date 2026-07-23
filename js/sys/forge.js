@@ -697,16 +697,19 @@
   }
 
   /* ==================== 属性计算 ==================== */
-  // 单件底材白值 ×强化倍率 ×升星倍率 → flat
+  // 单件底材白值 ×强化倍率 ×升星倍率 ×境界倍率 → flat
   function calcFlat(eq) {
     const b = baseOf(eq.baseId);
     const F = D().formula;
     const mul = F.enhMul(eq.enh || 0) * F.starMul(eq.star || 0);
+    // 境界倍率：金丹及以下不变，化神起逐步加乘，让装备后期不掉队
+    const realmIdx = (XG.state.player || {}).realmIdx || 0;
+    const realmMul = realmIdx <= 3 ? 1 : 1 + Math.pow(realmIdx - 3, 2);
     const out = { atk: 0, def: 0, hp: 0 };
     if (b && b.base) {
-      if (b.base.atk) out.atk = Math.round(b.base.atk * mul);
-      if (b.base.def) out.def = Math.round(b.base.def * mul);
-      if (b.base.hp) out.hp = Math.round(b.base.hp * mul);
+      if (b.base.atk) out.atk = Math.round(b.base.atk * mul * realmMul);
+      if (b.base.def) out.def = Math.round(b.base.def * mul * realmMul);
+      if (b.base.hp) out.hp = Math.round(b.base.hp * mul * realmMul);
     }
     return out;
   }
