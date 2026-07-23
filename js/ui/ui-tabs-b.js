@@ -50,6 +50,7 @@
     if (g.lingShi) out.push('灵石 ' + fmtI(g.lingShi));
     if (g.lingYu) out.push('灵玉 ' + fmtI(g.lingYu));
     if (g.cult) out.push('修为 ' + fmtI(g.cult));
+    if (g.exp) out.push('灵宠经验 ' + fmtI(g.exp));
     pushKV(out, g.mat, (k) => { const m = matOf(k); return m ? m.name : k; }, '');
     pushKV(out, g.pill, pillName, '');
     pushKV(out, g.frag, gfName, '残篇·');

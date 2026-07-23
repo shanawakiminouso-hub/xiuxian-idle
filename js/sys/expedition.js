@@ -391,7 +391,7 @@
     const report = {
       t: Date.now(), mapId: team.mapId, mapName: map ? map.name : team.mapId,
       icon: map ? map.icon : '🗺️', dur: team.dur || opt.sec, factor: Math.round(factor * 100) / 100,
-      mat: {}, pill: {}, frag: {}, egg: 0, recipe: false, hongyun: false, event: false,
+      mat: {}, pill: {}, frag: {}, egg: 0, recipe: false, hongyun: false, event: false, exp: 0,
     };
     const resDelta = { mat: {}, pill: {} };
 
@@ -467,6 +467,24 @@
     if (report.egg) resDelta.egg = report.egg;
     if (report.lingYu) resDelta.lingYu = report.lingYu;
     XG.addRes(resDelta);
+
+    // ---- 历练灵宠获得经验（按兽栏打工速率 ×0.5 × 耗时） ----
+    var totalExp = 0;
+    (team.petUids || []).forEach(function (uid) {
+      const pet = findPet(uid);
+      if (!pet) return;
+      const sp = speciesOf(pet);
+      const grade = sp ? sp.grade : 1;
+      const realmIdx = (XG.state.player || {}).realmIdx || 0;
+      const expPs = (80 + 40 * grade) * (1 + realmIdx) * 0.5;
+      const expGain = Math.floor(expPs * (team.dur || opt.sec));
+      totalExp += expGain;
+      try {
+        const ps = XG.sys.pets;
+        if (ps && typeof ps.addExp === 'function') ps.addExp(uid, expGain);
+      } catch (e) { /* 防御性 */ }
+    });
+    report.exp = totalExp;
 
     // ---- 释放灵宠岗位 ----
     (team.petUids || []).forEach(function (uid) {
